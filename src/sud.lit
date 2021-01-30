@@ -13,53 +13,48 @@ installed. As such, it is designed for security, leveraging all
 possible measures to avoid vulnerabilities, including the reduction of
 complexity in its own source-code.
 
-The purpose of `sud` is to execute commands as root (super-user) or as
-other users that are configured on the system. For its configuration
-and authorization of users who can access its services, it relies on a
-simple config file: `/etc/sudrc`.
 
-The config file format is a simple sequence of keys and values, all
-strings separated by an equal sign `=`.
+The purpose of `sud` is to execute commands as root (super-user) or as
+other users that are configured on the system. For the configuration
+of authorized users it relies on their belonging to groups `wheel`,
+`sud` or `sudo`, for info see `vigr(8)` or `setuid(2)`.
+
+For more general instructions, start from the [homepage of
+SUD](https://sud.dyne.org).
 
 @s Code structure overview
 
-The overall structure of `sud` source-code is defined by this
-`Literate` program `sud.lit`:
+The only source file is `sud.c`.
+
+The overall structure of `sud.c` is simple:
 
 --- sud.c
 @{Header files of system dependencies}
-@{Preprocessor definitions}
-@{Global variables}
-@{Local functions}
+#include "macros.h"
+@{macros.h}
 @{The main program}
 ---
 
-@s Dependencies
+@s Headers
 
-
-We must include the standard I/O definitions, since we want to send formatted output to *stdout* and *stderr*.
+We want to have as less requirements as possible, so this list should
+be kept short and eventually include `#ifdef` directives for specific
+platform targets.
 
 --- Header files of system dependencies
-// #include <stdio.h>
-// // #include <stdlib.h>
-// // #include <fcntl.h>
-// // #include <unistd.h>
-// #include <errno.h>
-// #include <string.h>
-#include "macros.h"
----
-
-@s Preprocessor macros, includes and exit codes
-
-The `status` variable will tell the operating system if the run was successful or not, 
-and `prog_name` is used in case there’s an error message to be printed.
-
---- macros.h
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
+---
+
+@s Macros, includes and exit codes
+
+The `status` variable will tell the operating system if the run was successful or not, 
+and `prog_name` is used in case there’s an error message to be printed.
+
+--- macros.h
 
 #define OK 0                  // status code for successful run
 #define usage_error 1         // status code for command not found
@@ -73,29 +68,6 @@ and `prog_name` is used in case there’s an error message to be printed.
 #define MAX_FILE   1024*100
 ---
 
-@s Globals
-
---- Global variables
-int status = OK;    // exit status of command, initially OK
-char *prog_name;    // who we are
----
-
-@s Input/Output functions
-
-These functions are found inside `io.c` and deal with the reading of contents from a file descriptor.
-
-The current implementation uses `fseek` to determine the file length. The caller should use `file_size` to find out the bytes needed to read the file, then allocate the buffer and pass it as destination to `file_load`.
-
-Future implementations may differ, it is preferable to use the lower level `open/close` interface to conform with both `4.3BSD` and `POSIX.1-2001` specifications.
-
---- Local functions
-// returns size of file descriptor in bytes
-extern size_t file_size(FILE *fd);
-
-// reads an amount of bytes from the file descriptor inside dst buffer
-extern void file_load(char *dst, size_t bytes, FILE *fd);
----
-
 @s Main
 
 Now we come to the general layout of the `main()` function.
@@ -103,17 +75,14 @@ Now we come to the general layout of the `main()` function.
 --- The main program
 int main(int argc, char **argv)
 {
-    @{Variables local to main}
+	int status = OK;    // exit status of command, initially OK
+	char *prog_name = "sud";    // who we are
     prog_name = argv[0];
     @{Parse command-line options}
     @{Execute the command}
     @{Print any errors}
     return status;
 }
----
-
-
---- Variables local to main
 ---
 
 ---Parse command-line options

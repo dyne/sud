@@ -1,0 +1,43 @@
+<h1 id="sud--super-user-do">SUD :: Super User Do</h1>
+<p>This software aims to be a UNIX tool for generic secure usage when in need of privilege escalation. It is designed to run SUID, with &quot;super-user powers&quot; to execute things as root on the system it is installed.</p>
+<h2 id="methodology">Methodology</h2>
+<p>SUD is designed for security: it leverages all possible measures to avoid vulnerabilities, primarily the reduction of complexity in its own design and implementation.</p>
+<p>SUD is software written following the <a href="https://en.wikipedia.org/wiki/Literate_programming">literate-programming</a> approach and welcomes reviews and contributions, also anonymous ones.</p>
+<p>You are welcome to read <a href="https://sud.dyne.org/sud.html">SUD's source-code and documentation</a>.</p>
+<p>SUD is licensed as Public Domain in the hope to improve the security of UNIX systems at large. The portability of <code>sud</code> to any BSD and POSIX compliant system is a desirable feature and contributions are welcome.</p>
+<h2 id="downloads">Downloads</h2>
+<p>SUD is distributed as a static binary for various platforms on <a href="https://files.dyne.org/sud">files.dyne.org/sud</a></p>
+<p>Binaries include <a href="https://musl-libc.org">musl-libc</a> as a statically linked component.</p>
+<h2 id="motivation">Motivation</h2>
+<p>This software is a direct response to the <code>sudo</code> tool which has been adopted by major Linux and BSD distros while augmenting its complexity and <a href="https://cve.mitre.org/cgi-bin/cvekey.cgi?keyword=sudo">collecting vulnerabilities</a> last not least <a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-3156">CVE-2021-3156</a> which prompted the creation of <code>sud</code> to finally act up and develop something different, considering we have been relying for 10 years on something that could have been trivially hacked all that time.</p>
+<p>SUD takes inspiration from the suckless tool <a href="https://sup.dyne.org">sup</a> and welcomes contributions from coders who are well incline to be suckless.</p>
+<h2 id="work-in-progress">Work in progress</h2>
+<p>If you are watching this repo right now it means you are really interested in the topic or have been contacted by one of us. In case you are interested in contributing please signal yourself with an issue and a link to anything interesting that can entertain the merry folks gathering around this campfire.</p>
+<h2 id="how-to-build-sud-from-source">How to build SUD from source</h2>
+<p>Literate programming source-code starts from documentation which is then used to generate code and a website. In case of SUD we use the <a href="https://github.com/zyedidia/Literate">Literate Programming System</a> written in D, which is included as a submodule in the <code>literate</code> sub-folder. To make sure it is ready for use:</p>
+<ol>
+<li>install <code>dub</code> the D package registry on your system</li>
+<li>make sure the <code>literate</code> git submodule is initialised and updated</li>
+<li>enter <code>literate</code> and type <code>make</code></li>
+</ol>
+<h2 id="license">License</h2>
+<p>SUD is designed and written by Denis Roio &lt;Jaromil @ dyne.org&gt;</p>
+<p>SUD is Copyright (C) 2021 by the Dyne.org foundation</p>
+<p xmlns:dct="http://purl.org/dc/terms/" xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#">
+  <a rel="license"
+     href="http://creativecommons.org/publicdomain/zero/1.0/">
+    <img src="http://i.creativecommons.org/p/zero/1.0/88x31.png" style="border-style: none;" alt="CC0" />
+  </a>
+  <br />
+  To the extent possible under law,
+  <a rel="dct:publisher"
+     href="https://dyne.org">
+    <span property="dct:title">Dyne.org foundation</span></a>
+  has waived all copyright and related or neighboring rights to
+  <span property="dct:title">sud</span>.
+This work is published from:
+<span property="vcard:Country" datatype="dct:ISO3166"
+      content="NL" about="https://dyne.org">
+  The Netherlands</span>.
+</p>
+
