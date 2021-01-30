@@ -37,6 +37,18 @@ you are interested in contributing please signal yourself with an
 issue and a link to anything interesting that can entertain the merry
 folks gathering around this campfire.
 
+## Build from source
+
+Literate programming source-code starts from documentation which is
+then used to generate code and a website. In case of SUD we use the
+[Literate Programming System](https://github.com/zyedidia/Literate)
+written in D, which is included as a submodule in the `literate`
+sub-folder. To make sure it is ready for use:
+
+1. install `dub` the D package registry on your system
+2. make sure the `literate` git submodule is initialised and updated
+3. enter `literate` and type `make`
+
 ## License
 
 <p xmlns:dct="http://purl.org/dc/terms/" xmlns:vcard="http://www.w3.org/2001/vcard-rdf/3.0#">

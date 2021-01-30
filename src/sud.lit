@@ -1,0 +1,94 @@
+@code_type c .c
+@comment_type // %s
+@compiler lit -t sud.lit && gcc sud.c && rm a.out
+
+@title Super User Do
+
+@s Multi-user privilege escalation tool
+
+This software aims to be a UNIX tool for generic secure usage when in
+need of privilege escalation. It is designed to run SUID, with
+"super-user powers" to execute things as root on the system it is
+installed. As such, it is designed for security, leveraging all
+possible measures to avoid vulnerabilities, including the reduction of
+complexity in its own source-code.
+
+The purpose of `sud` is to execute commands as root (super-user) or as
+other users that are configured on the system. For its configuration
+and authorization of users who can access its services, it relies on a
+simple config file: `/etc/sudrc`.
+
+The config file format is a simple sequence of keys and values, all
+strings separated by an equal sign `=`.
+
+@s
+
+The overall structure of `sud` source-code is defined by this
+`Literate` program `sud.lit`:
+
+--- sud.c
+@{Header files of system dependencies}
+@{Preprocessor definitions}
+@{Global variables}
+@{Local functions}
+@{The main program}
+---
+
+@s
+
+
+We must include the standard I/O definitions, since we want to send formatted output to *stdout* and *stderr*.
+
+--- Header files of system dependencies
+#include <stdio.h>
+#include <fcntl.h>
+#include <unistd.h>
+---
+
+@s
+
+The `status` variable will tell the operating system if the run was successful or not, 
+and `prog_name` is used in case there’s an error message to be printed.
+
+--- Preprocessor definitions
+#define OK 1    /* status code for successful run */
+#define usage_error 1    /* status code for improper syntax */
+#define cannot_open_file 2    /* status code for file access error */ 
+---
+
+--- Global variables
+int status = OK;    /* exit status of command, initially OK */
+char *prog_name;    /* who we are */
+---
+
+Now we come to the general layout of the `main()` function.
+
+--- Local functions
+---
+
+--- The main program
+int main(int argc, char **argv)
+{
+    @{Variables local to main}
+    prog_name = argv[0];
+    @{Parse command-line options}
+    @{Execute the command}
+    @{Print any errors}
+    return status;
+}
+---
+
+
+--- Variables local to main
+---
+
+---Parse command-line options
+---
+
+---Execute the command
+---
+
+---Print any errors
+---
+
+
