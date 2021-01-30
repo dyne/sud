@@ -17,11 +17,11 @@ improves security.
 
 This software is a direct response to the `sudo` tool which has been
 adopted by major Linux and BSD distros while augmenting its complexity
-and [collectinve
-CVEs](https://cve.mitre.org/cgi-bin/cvekey.cgi?keyword=sudo) last not
-least
+and [collecting
+vulnerabilities](https://cve.mitre.org/cgi-bin/cvekey.cgi?keyword=sudo)
+last not least
 [CVE-2021-3156](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-3156)
-which prompted the authors of `sud` to finally act up and develop
+which prompted the creation of `sud` to finally act up and develop
 something different, considering we have been relying for 10 years on
 something that could have been trivially hacked all that time.
 
