@@ -32,6 +32,7 @@ The overall structure of `sud.c` is simple:
 @{Header files of system dependencies}
 #include "macros.h"
 @{macros.h}
+@{Secure computing filters}
 @{The main program}
 ---
 
@@ -47,6 +48,8 @@ platform targets.
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
+
+#include "src/parg.h"
 ---
 
 @s Macros, includes and exit codes
@@ -63,9 +66,6 @@ and `prog_name` is used in case there’s an error message to be printed.
 #define ERR(fstr,...) { fprintf(stderr,fstr, ##__VA_ARGS__); fputc('\n',stderr); }
 #define XXX(fstr,...) { fprintf(stderr,fstr, ##__VA_ARGS__); fputc('\n',stderr); }
 #define ACT(fstr,...) { fprintf(stderr,fstr, ##__VA_ARGS__); fputc('\n',stderr); }
-
-#define MAX_STRING 4096
-#define MAX_FILE   1024*100
 ---
 
 @s Main
@@ -78,6 +78,7 @@ int main(int argc, char **argv)
 	int status = OK;    // exit status of command, initially OK
 	char *prog_name = "sud";    // who we are
     prog_name = argv[0];
+	@{Setup secure computing}
     @{Parse command-line options}
     @{Execute the command}
     @{Print any errors}
@@ -85,7 +86,83 @@ int main(int argc, char **argv)
 }
 ---
 
----Parse command-line options
+
+--- Secure computing filters
+#ifdef ARCH_LINUX
+#include <sys/prctl.h>
+#include <linux/seccomp.h>
+#include <linux/filter.h>
+#include <sys/syscall.h>
+static const struct sock_filter  strict_filter[] = {
+	BPF_STMT(BPF_LD | BPF_W | BPF_ABS, (offsetof (struct seccomp_data, nr))),
+
+	BPF_JUMP(BPF_JMP | BPF_JEQ, SYS_write,        3, 0),
+	BPF_JUMP(BPF_JMP | BPF_JEQ, SYS_exit,         2, 0),
+	BPF_JUMP(BPF_JMP | BPF_JEQ, SYS_exit_group,   1, 0),
+
+	BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_KILL),
+	BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ALLOW)
+};
+
+static const struct sock_fprog  strict = {
+	.len = (unsigned short)( sizeof strict_filter / sizeof strict_filter[0] ),
+	.filter = (struct sock_filter *)strict_filter
+};
+#endif
+---
+
+--- Setup secure computing
+#   ifdef ARCH_LINUX /* LINUX engages SECCOMP. */
+			if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0)) {
+				ERR("Seccomp fail to set no_new_privs: %s", strerror(errno));
+				return usage_error;
+			}
+			if (prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, &strict)) {
+				ERR("Seccomp fail to install filter: %s", strerror(errno));
+				return usage_error;
+			}
+#   endif /* ARCH_LINUX */
+---
+
+Commandline option parsing is made using the excellent
+[parg](https://github.com/jibsen/parg) library by Jørgen Ibsen also
+released in public domain
+
+--- Parse command-line options
+     int c;
+     struct parg_state ps;
+     parg_init(&ps);
+     while ((c = parg_getopt(&ps, argc, argv, "hs:v")) != -1) {
+	     switch (c) {
+	     case 1:
+		     ERR("unparsed '%s'", ps.optarg);
+		     break;
+	     case 'h':
+		     ERR("Usage: %s [-h] [-v] [-u USER] COMMAND",prog_name);
+		     return status;
+		     break;
+	     case 'v':
+		     ERR("%s 1.0.0",prog_name);
+		     return status;
+		     break;
+	     case '?':
+		     ERR("unknown option -%c", ps.optopt);
+			return usage_error;
+			break;
+	     case 'u':
+		     ERR("WIP: user setuid '%s'",ps.optarg);
+		     return usage_error;
+		     break;
+	     default:
+			ERR("error: unhandled option -%c", c);
+			return usage_error;
+			break;
+		}
+     }
+     for (c = ps.optind; c < argc; ++c) {
+	     ERR("leftover '%s'", argv[c]);
+     }
+     return status;
 ---
 
 ---Execute the command

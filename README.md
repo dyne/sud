@@ -24,9 +24,11 @@ welcome.
 
 ## Downloads
 
-SUD is distributed as a static binary for various platforms on [files.dyne.org/sud](https://files.dyne.org/sud)
+SUD is distributed as a static binary for various platforms on
+[files.dyne.org/sud](https://files.dyne.org/sud)
 
-Binaries include [musl-libc](https://musl-libc.org) as a statically linked component.
+Binaries include [musl-libc](https://musl-libc.org) as a statically
+linked component.
 
 ## Motivation
 
@@ -35,34 +37,43 @@ adopted by major Linux and BSD distros while augmenting its complexity
 and [collecting
 vulnerabilities](https://cve.mitre.org/cgi-bin/cvekey.cgi?keyword=sudo)
 last not least
-[CVE-2021-3156](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-3156)
-which prompted the creation of `sud` to finally act up and develop
-something different, considering we have been relying for 10 years on
-something that could have been trivially hacked all that time.
+[CVE-2021-3156](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-3156).
+
+With SUD we intend to finally act up and develop something different,
+considering we have been relying for 10 years on something that could
+have been trivially hacked all that time.
 
 SUD takes inspiration from the suckless tool
 [sup](https://sup.dyne.org) and welcomes contributions from coders who
 are well incline to be suckless.
 
+SUD will never, ever include integrations with systemd.
+
 ## Work in progress
 
 If you are watching this repo right now it means you are really
-interested in the topic or have been contacted by one of us. In case
-you are interested in contributing please signal yourself with an
-issue and a link to anything interesting that can entertain the merry
-folks gathering around this campfire.
+interested in the topic or have been contacted by one of us. Please
+signal yourself [with an issue](https://github.com/dyne/sud/) and be
+welcome to entertain the merry folks gathering around this campfire.
 
 ## How to build SUD from source
 
 Literate programming source-code starts from documentation which is
-then used to generate code and a website. In case of SUD we use the
-[Literate Programming System](https://github.com/zyedidia/Literate)
-written in D, which is included as a submodule in the `literate`
-sub-folder. To make sure it is ready for use:
+then used to generate the source-code and a website. In case of SUD we
+use the [Literate Programming
+System](https://github.com/zyedidia/Literate) written in D, which is
+included as a submodule in the `literate` sub-folder. Also
+[Pandoc](https://pandoc.org) is needed to render the README into its
+homepage. To make sure it is ready for use:
 
-1. install `dub` the D package registry on your system
+1. install `dub` the D package registry
+2. install `pandoc` for markdown rendering
 2. make sure the `literate` git submodule is initialised and updated
-3. enter `literate` and type `make`
+3. type `make`
+
+All the above should be possible on any operating system, if you don't
+know why is most likely because you don't know well enough the system
+you are running. Go find out.
 
 ## License
 
