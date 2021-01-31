@@ -248,7 +248,7 @@ released in public domain
 
 	     case 1: // stop to parse options, save the command and parse its arguments
 	     if(!fullcmd[0]) {
-		     struct stat st;
+		     struct stat tst;
 		     char file[PATH_MAX];
 		     char *p, *path = getenv ("PATH");
 		     if (path) // Check if command is found in $PATH
@@ -256,7 +256,7 @@ released in public domain
 				     if (*p==':' &amp;&amp; (p&gt;path&amp;&amp;*(p-1)!='\\')) {
 					     *p = 0;
 					     snprintf (file, sizeof (file)-1, "%s/%s", path, ps.optarg);
-					     if (!lstat (file, &amp;st)) {
+					     if (!lstat (file, &amp;tst)) {
 						     // command found
 						     snprintf(fullcmd,PATH_MAX,"%s",file);
 						     optind = ps.optind-1;
@@ -323,7 +323,7 @@ released in public domain
         fullcmd, pw?pw-&gt;pw_name:"", uid, gid);
 
     // command does not exist as binary on the filesystem
-    if (lstat (fullcmd, &amp;st) == -1) {
+       if (lstat (fullcmd, &amp;st) == -1) {
 	    ERR("cannot stat command: %s", fullcmd);
 	    return usage_error;
     }
@@ -332,6 +332,18 @@ released in public domain
 	    ERR("cannot run a binary others can write: %s", fullcmd);
 	    return usage_error;
     }
+
+
+     // Green light to privilege escalation
+     // -----------------------------------
+       if (setuid (target_uid) &lt;0) {
+	       ERR("setuid: %s",strerror(errno));
+	       return usage_error;
+       }
+       if (seteuid (target_uid) &lt;0) {
+	       ERR("seteuid: %s",strerror(errno));
+	       return usage_error;
+       }
 
     // turn current process into the execution of command
     // XXX("execve: %s",fullcmd);
