@@ -355,17 +355,6 @@ int main(int argc, char **argv)
     // XXX("sud %s called by %s(%d) gid(%d)\n",
     //     fullcmd, pw?pw-&gt;pw_name:"", uid, gid);
 
-    // command does not exist as binary on the filesystem
-       if (lstat (fullcmd, &amp;st) == -1) {
-	    ERR("cannot stat command: %s", fullcmd);
-	    return usage_error;
-    }
-    if (st.st_mode &amp; 0022) {
-	    // command has wrong permissions (writable to others)
-	    ERR("cannot run a binary others can write: %s", fullcmd);
-	    return usage_error;
-    }
-
     // get number of groups first
     getgrouplist(pw-&gt;pw_name, pw-&gt;pw_gid, NULL, &amp;ngroups);
     gid_t groups[ngroups];
@@ -386,6 +375,18 @@ int main(int argc, char **argv)
 	    ERR("user not authorized: %s",pw-&gt;pw_name);
 	    return usage_error;
     }
+	
+    // command must exist as binary on the filesystem
+       if (lstat (fullcmd, &amp;st) == -1) {
+	    ERR("cannot stat command: %s", fullcmd);
+	    return usage_error;
+    }
+    if (st.st_mode &amp; 0022) {
+	    // command must have correct permissions and not be writable to anyone
+	    ERR("cannot run a binary others can write: %s", fullcmd);
+	    return usage_error;
+    }
+
 </pre>
 
 
@@ -395,7 +396,6 @@ int main(int argc, char **argv)
 <div class="codeblock">
 <span class="codeblock_name">{Execute the command <a href="sud.html#1:5">5</a>}</span>
 <pre class="prettyprint lang-c">
-
 
        // privilege escalation
        if (setuid (target_uid) &lt;0) {
