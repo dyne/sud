@@ -72,7 +72,6 @@ SUD</a>.
 <pre class="prettyprint lang-c">
 <span class="nocode pln">{Header files of system dependencies, <a href="sud.html#1:3">3</a>}</span>
 <span class="nocode pln">{Macros and exit codes, <a href="sud.html#1:4">4</a>}</span>
-<span class="nocode pln">{Secure computing filters, <a href="sud.html#1:5">5</a>}</span>
 <span class="nocode pln">{The main program, <a href="sud.html#1:5">5</a>}</span>
 </pre>
 
@@ -89,6 +88,7 @@ platform targets.
 <div class="codeblock">
 <span class="codeblock_name">{Header files of system dependencies <a href="sud.html#1:3">3</a>}</span>
 <pre class="prettyprint lang-c">
+#define _DEFAULT_SOURCE 1
 #include &lt;stdio.h&gt;
 #include &lt;stddef.h&gt;
 #include &lt;stdlib.h&gt;
@@ -102,8 +102,6 @@ platform targets.
 // getpwnam
 #include &lt;pwd.h&gt;
 #include "src/parg.h"
-// realpath
-#include &lt;limits.h&gt;
 </pre>
 
 
@@ -145,8 +143,8 @@ and <code>prog_name</code> is used in case there’s an error message to be prin
 int main(int argc, char **argv)
 {
 <span class="nocode pln">	{Declare variables, <a href="sud.html#1:5">5</a>}</span>
-<span class="nocode pln">	{Setup secure computing, <a href="sud.html#1:5">5</a>}</span>
 <span class="nocode pln">    {Parse command-line options, <a href="sud.html#1:5">5</a>}</span>
+<span class="nocode pln">    {Verify privileged access, <a href="sud.html#1:5">5</a>}</span>
 <span class="nocode pln">    {Execute the command, <a href="sud.html#1:5">5</a>}</span>
 <span class="nocode pln">    {Print any errors, <a href="sud.html#1:5">5</a>}</span>
     return status;
@@ -172,60 +170,6 @@ int main(int argc, char **argv)
     static int target_uid=0;
 
     prog_name = argv[0];
-</pre>
-
-
-
-</div>
-
-<div class="codeblock">
-<span class="codeblock_name">{Secure computing filters <a href="sud.html#1:5">5</a>}</span>
-<pre class="prettyprint lang-c">
-#ifdef ARCH_LINUX
-#include &lt;sys/prctl.h&gt;
-#include &lt;linux/seccomp.h&gt;
-#include &lt;linux/filter.h&gt;
-#include &lt;sys/syscall.h&gt;
-static const struct sock_filter  strict_filter[] = {
-	BPF_STMT(BPF_LD | BPF_W | BPF_ABS, (offsetof (struct seccomp_data, nr))),
-
-	BPF_JUMP(BPF_JMP | BPF_JEQ, SYS_open,         6, 0),
-	BPF_JUMP(BPF_JMP | BPF_JEQ, SYS_execve,       5, 0),
-	BPF_JUMP(BPF_JMP | BPF_JEQ, SYS_access,      4, 0),
-
-
-	BPF_JUMP(BPF_JMP | BPF_JEQ, SYS_write,        3, 0),
-	BPF_JUMP(BPF_JMP | BPF_JEQ, SYS_exit,         2, 0),
-	BPF_JUMP(BPF_JMP | BPF_JEQ, SYS_exit_group,   1, 0),
-
-	BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_KILL),
-	BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ALLOW)
-};
-
-static const struct sock_fprog  strict = {
-	.len = (unsigned short)( sizeof strict_filter / sizeof strict_filter[0] ),
-	.filter = (struct sock_filter *)strict_filter
-};
-#endif
-</pre>
-
-
-<p class="seealso">Used in section <a href="sud.html#1:2">2</a></p>
-</div>
-
-<div class="codeblock">
-<span class="codeblock_name">{Setup secure computing <a href="sud.html#1:5">5</a>}</span>
-<pre class="prettyprint lang-c">
-#   ifdef ARCH_LINUX /* LINUX engages SECCOMP. */
-			if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0)) {
-				ERR("Seccomp fail to set no_new_privs: %s", strerror(errno));
-				return usage_error;
-			}
-			if (prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, &amp;strict)) {
-				ERR("Seccomp fail to install filter: %s", strerror(errno));
-				return usage_error;
-			}
-#   endif /* ARCH_LINUX */
 </pre>
 
 
@@ -308,7 +252,7 @@ released in public domain
 </div>
 
 <div class="codeblock">
-<span class="codeblock_name">{Execute the command <a href="sud.html#1:5">5</a>}</span>
+<span class="codeblock_name">{Verify privileged access <a href="sud.html#1:5">5</a>}</span>
 <pre class="prettyprint lang-c">
     // get the called UID and GID
     uid = getuid ();
@@ -332,10 +276,18 @@ released in public domain
 	    ERR("cannot run a binary others can write: %s", fullcmd);
 	    return usage_error;
     }
+</pre>
 
 
-     // Green light to privilege escalation
-     // -----------------------------------
+
+</div>
+
+<div class="codeblock">
+<span class="codeblock_name">{Execute the command <a href="sud.html#1:5">5</a>}</span>
+<pre class="prettyprint lang-c">
+
+
+       // privilege escalation
        if (setuid (target_uid) &lt;0) {
 	       ERR("setuid: %s",strerror(errno));
 	       return usage_error;

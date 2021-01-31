@@ -31,7 +31,6 @@ The overall structure of `sud.c` is simple:
 --- sud.c
 @{Header files of system dependencies}
 @{Macros and exit codes}
-@{Secure computing filters}
 @{The main program}
 ---
 
@@ -85,14 +84,13 @@ Now we come to the general layout of the `main()` function.
 int main(int argc, char **argv)
 {
 	@{Declare variables}
-	@{Setup secure computing}
     @{Parse command-line options}
+    @{Verify privileged access}
     @{Execute the command}
     @{Print any errors}
     return status;
 }
 ---
-
 
 --- Declare variables
 	int status = OK;    // exit status of command, initially OK
@@ -107,48 +105,6 @@ int main(int argc, char **argv)
     static int target_uid=0;
 
     prog_name = argv[0];
----
-
---- Secure computing filters
-#ifdef ARCH_LINUX
-#include <sys/prctl.h>
-#include <linux/seccomp.h>
-#include <linux/filter.h>
-#include <sys/syscall.h>
-static const struct sock_filter  strict_filter[] = {
-	BPF_STMT(BPF_LD | BPF_W | BPF_ABS, (offsetof (struct seccomp_data, nr))),
-
-	BPF_JUMP(BPF_JMP | BPF_JEQ, SYS_open,         6, 0),
-	BPF_JUMP(BPF_JMP | BPF_JEQ, SYS_execve,       5, 0),
-	BPF_JUMP(BPF_JMP | BPF_JEQ, SYS_access,      4, 0),
-
-
-	BPF_JUMP(BPF_JMP | BPF_JEQ, SYS_write,        3, 0),
-	BPF_JUMP(BPF_JMP | BPF_JEQ, SYS_exit,         2, 0),
-	BPF_JUMP(BPF_JMP | BPF_JEQ, SYS_exit_group,   1, 0),
-
-	BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_KILL),
-	BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ALLOW)
-};
-
-static const struct sock_fprog  strict = {
-	.len = (unsigned short)( sizeof strict_filter / sizeof strict_filter[0] ),
-	.filter = (struct sock_filter *)strict_filter
-};
-#endif
----
-
---- Setup secure computing
-#   ifdef ARCH_LINUX /* LINUX engages SECCOMP. */
-			if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0)) {
-				ERR("Seccomp fail to set no_new_privs: %s", strerror(errno));
-				return usage_error;
-			}
-			if (prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, &strict)) {
-				ERR("Seccomp fail to install filter: %s", strerror(errno));
-				return usage_error;
-			}
-#   endif /* ARCH_LINUX */
 ---
 
 Commandline option parsing is made using the excellent
@@ -220,7 +176,7 @@ released in public domain
      // XXX("optind: %i",ps.optind);
 ---
 
----Execute the command
+--- Verify privileged access
     // get the called UID and GID
     uid = getuid ();
     gid = getgid ();
@@ -243,6 +199,9 @@ released in public domain
 	    ERR("cannot run a binary others can write: %s", fullcmd);
 	    return usage_error;
     }
+---
+
+--- Execute the command
 
 
        // privilege escalation
