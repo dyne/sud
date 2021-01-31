@@ -30,8 +30,7 @@ The overall structure of `sud.c` is simple:
 
 --- sud.c
 @{Header files of system dependencies}
-#include "macros.h"
-@{macros.h}
+@{Macros and exit codes}
 @{Secure computing filters}
 @{The main program}
 ---
@@ -48,24 +47,35 @@ platform targets.
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
-
+// lstat
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <fcntl.h>
+// getpwnam
+#include <pwd.h>
 #include "src/parg.h"
+// realpath
+#include <limits.h>
 ---
 
-@s Macros, includes and exit codes
+@s Preprocessor directives
 
 The `status` variable will tell the operating system if the run was successful or not, 
 and `prog_name` is used in case there’s an error message to be printed.
 
---- macros.h
+--- Macros and exit codes
 
 #define OK 0                  // status code for successful run
 #define usage_error 1         // status code for command not found
-#define cannot_open_conf 2    // status code for config file access error
 
 #define ERR(fstr,...) { fprintf(stderr,fstr, ##__VA_ARGS__); fputc('\n',stderr); }
 #define XXX(fstr,...) { fprintf(stderr,fstr, ##__VA_ARGS__); fputc('\n',stderr); }
 #define ACT(fstr,...) { fprintf(stderr,fstr, ##__VA_ARGS__); fputc('\n',stderr); }
+
+// maximum length of a command string
+#define MAXCMD 512
+#define PATH_MAX 1024
 ---
 
 @s Main
@@ -75,9 +85,7 @@ Now we come to the general layout of the `main()` function.
 --- The main program
 int main(int argc, char **argv)
 {
-	int status = OK;    // exit status of command, initially OK
-	char *prog_name = "sud";    // who we are
-    prog_name = argv[0];
+	@{Declare variables}
 	@{Setup secure computing}
     @{Parse command-line options}
     @{Execute the command}
@@ -87,6 +95,21 @@ int main(int argc, char **argv)
 ---
 
 
+--- Declare variables
+	int status = OK;    // exit status of command, initially OK
+	char *prog_name = "sud";    // who we are
+
+    static char fullcmd[PATH_MAX] = {0x0};
+
+    struct passwd *pw;
+    struct stat st;
+
+    static int uid, gid;
+    static int target_uid=0;
+
+    prog_name = argv[0];
+---
+
 --- Secure computing filters
 #ifdef ARCH_LINUX
 #include <sys/prctl.h>
@@ -95,6 +118,11 @@ int main(int argc, char **argv)
 #include <sys/syscall.h>
 static const struct sock_filter  strict_filter[] = {
 	BPF_STMT(BPF_LD | BPF_W | BPF_ABS, (offsetof (struct seccomp_data, nr))),
+
+	BPF_JUMP(BPF_JMP | BPF_JEQ, SYS_open,         6, 0),
+	BPF_JUMP(BPF_JMP | BPF_JEQ, SYS_execve,       5, 0),
+	BPF_JUMP(BPF_JMP | BPF_JEQ, SYS_access,      4, 0),
+
 
 	BPF_JUMP(BPF_JMP | BPF_JEQ, SYS_write,        3, 0),
 	BPF_JUMP(BPF_JMP | BPF_JEQ, SYS_exit,         2, 0),
@@ -129,46 +157,102 @@ Commandline option parsing is made using the excellent
 released in public domain
 
 --- Parse command-line options
-     int c;
+     int c, optind;
      struct parg_state ps;
      parg_init(&ps);
-     while ((c = parg_getopt(&ps, argc, argv, "hs:v")) != -1) {
+     while ((c = parg_getopt(&ps, argc, argv, "hvu:")) != -1) {
+	     if(fullcmd[0]) break;
 	     switch (c) {
-	     case 1:
-		     ERR("unparsed '%s'", ps.optarg);
-		     break;
+
+	     case 1: // stop to parse options, save the command and parse its arguments
+	     if(!fullcmd[0]) {
+		     struct stat st;
+		     char file[PATH_MAX];
+		     char *p, *path = getenv ("PATH");
+		     if (path) // Check if command is found in $PATH
+			     for (p = path; *p; p++) {
+				     if (*p==':' && (p>path&&*(p-1)!='\\')) {
+					     *p = 0;
+					     snprintf (file, sizeof (file)-1, "%s/%s", path, ps.optarg);
+					     if (!lstat (file, &st)) {
+						     // command found
+						     snprintf(fullcmd,PATH_MAX,"%s",file);
+						     optind = ps.optind-1;
+					         break;
+					     }
+					     *p = ':';
+					     path = p+1;
+				     }
+			     }
+	     }
+	     break;
 	     case 'h':
+	     help:
 		     ERR("Usage: %s [-h] [-v] [-u USER] COMMAND",prog_name);
-		     return status;
+		     return OK;
 		     break;
 	     case 'v':
 		     ERR("%s 1.0.0",prog_name);
-		     return status;
+		     return OK;
 		     break;
 	     case '?':
 		     ERR("unknown option -%c", ps.optopt);
-			return usage_error;
-			break;
-	     case 'u':
-		     ERR("WIP: user setuid '%s'",ps.optarg);
 		     return usage_error;
 		     break;
+	     case 'u':
+		     {
+			     struct passwd *puid;
+			     errno = 0;
+			     puid = getpwnam(ps.optarg);
+			     if(!puid && errno) ERR("error in %s: getpwnam",__func__);
+			     if(puid) target_uid = puid->pw_uid;
+		     }
+			     break;
 	     default:
-			ERR("error: unhandled option -%c", c);
-			return usage_error;
-			break;
-		}
+		     ERR("error: unhandled option -%c", c);
+		     return usage_error;
+		     break;
+	     }
      }
-     for (c = ps.optind; c < argc; ++c) {
-	     ERR("leftover '%s'", argv[c]);
-     }
-     return status;
+     // for (c = ps.optind; c < argc; ++c) {
+	 //     ERR("leftover '%s'", argv[c]);
+     // }
+     if(argc==1) goto help;
+     // XXX("optind: %i",ps.optind);
 ---
 
 ---Execute the command
+    // get the called UID and GID
+    uid = getuid ();
+    gid = getgid ();
+    // copy the execve argument locally
+    // snprintf(fullcmd,MAXCMD,"%s",argv[ps.optind]);
+
+    // get the username string from /etc/passwd
+    pw = getpwuid( uid );
+    // one could maintain a log of calls here
+    XXX("sud %s called by %s(%d) gid(%d)\n",
+        fullcmd, pw?pw->pw_name:"", uid, gid);
+
+    // command does not exist as binary on the filesystem
+    if (lstat (fullcmd, &st) == -1) {
+	    ERR("cannot stat command: %s", fullcmd);
+	    return usage_error;
+    }
+    if (st.st_mode & 0022) {
+	    // command has wrong permissions (writable to others)
+	    ERR("cannot run a binary others can write: %s", fullcmd);
+	    return usage_error;
+    }
+
+    // turn current process into the execution of command
+    // XXX("execve: %s",fullcmd);
+    execve(fullcmd, &argv[optind], NULL); //&argv[ps.optind], NULL);
 ---
 
 ---Print any errors
+    // execv returns only on errors
+    ERR("execv: %s", strerror(errno));
 ---
 
 

@@ -8,10 +8,10 @@ all: literate/bin/lit
 	@echo "C output:    sud.c"
 	@echo "HTML output: sud.html"
 	gcc -std=c99 $(DEBUG_FLAGS) -I src -c src/parg.c
-	gcc -std=c99 $(DEBUG_FLAGS) -DARCH_LINUX sud.c parg.o -o sud
+	gcc -std=c99 $(DEBUG_FLAGS) sud.c parg.o -o sud
 
 literate: literate/bin/lit
 	make -C literate
 
 clean:
-	rm -f sud.html sud.c macros.h index.html 
+	rm -f sud parg.o sud.html sud.c macros.h index.html
