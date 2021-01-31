@@ -105,6 +105,10 @@ platform targets.
 #include &lt;grp.h&gt;
 // local parg module
 #include "src/parg.h"
+// release stamp
+#ifdef RELEASE
+#include "stamp.h"
+#endif
 </pre>
 
 
@@ -116,13 +120,13 @@ platform targets.
 <div class="codeblock">
 <span class="codeblock_name">{Macros and exit codes <a href="sud.html#1:4">4</a>}</span>
 <pre class="prettyprint lang-c">
-
+#define VERSION "1.0.0"
 #define OK 0                  // status code for successful run
 #define usage_error 1         // status code for command not found
 
 #define ERR(fstr,...) { fprintf(stderr,fstr, ##__VA_ARGS__); fputc('\n',stderr); }
 #define XXX(fstr,...) { fprintf(stderr,fstr, ##__VA_ARGS__); fputc('\n',stderr); }
-#define ACT(fstr,...) { fprintf(stderr,fstr, ##__VA_ARGS__); fputc('\n',stderr); }
+#define ACT(fstr,...) { fprintf(stdout,fstr, ##__VA_ARGS__); fputc('\n',stdout); }
 
 // maximum length of a command string
 #define MAXCMD 512
@@ -164,7 +168,7 @@ int main(int argc, char **argv)
     struct stat st;
 
      // recognize current user
-    int uid, gid;
+    int uid;
     struct passwd *pw=0x0;
 
      // target privilege
@@ -220,11 +224,15 @@ released in public domain
 	     break;
 	     case 'h':
 	     help:
-		     ERR("Usage: %s [-h] [-v] [-u USER] COMMAND",argv[0]);
+		     ACT("Usage: %s [-h] [-v] [-u USER] COMMAND",argv[0]);
 		     return OK;
 		     break;
 	     case 'v':
-		     ERR("%s 1.0.0",argv[0]);
+		     ACT("Sud version %s", VERSION);
+#ifdef RELEASE
+		     ACT("%s (sha512)",SHA512_SUD_C);
+		     ACT("built on %s",BUILD_TIME);
+#endif
 		     return OK;
 		     break;
 	     case '?':
@@ -263,7 +271,6 @@ released in public domain
 
     // get the called UID and GID
     uid = getuid ();
-    gid = getgid ();
 
     // get the username string from /etc/passwd
     pw = getpwuid( uid );

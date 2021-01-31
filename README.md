@@ -34,10 +34,20 @@ To start using sud on a 64bit GNU+Linux machine, simply do:
 
 ```
 curl https://files.dyne.org/sud/sud_x86_64 > ~/Downloads/sud
-sudo install -o root -g root -p -m 4775 sud /usr/local/bin
+sudo install -o root -g root -m 4775 ~/Downloads/sud /usr/local/bin
 ```
 
 Use `vigr` or edit `/etc/groups` to make sure your privileged users are in the `sudo` or `wheel` groups.
+
+To verify the binary integrity of SUD use `sud -v` and compare the SHA512 to the [hash published here](https://files.dyne.org/sud/SHASUMS.txt) and signed with [my gpg key](https://jaromil.dyne.org/jaromil.pub): it ties the binary to the `sud.c` sourcecode used to build it. Here a shell snippet that does just that:
+
+```
+hash=https://files.dyne.org/sud/SHASUMS.txt
+curl -s https://jaromil.dyne.org/jaromil.pub | gpg --import 
+curl -s $hash | gpg --verify
+curl -s $hash | awk '/sud.c$/ {print $0}'
+sud -v | awk '/sud.c/ {print $0}'
+```
 
 ## Motivation
 
@@ -48,9 +58,13 @@ vulnerabilities](https://cve.mitre.org/cgi-bin/cvekey.cgi?keyword=sudo)
 last not least
 [CVE-2021-3156](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-3156).
 
-With SUD we intend to finally act up and develop something different,
-considering we have been relying for 10 years on something that could
-have been trivially hacked all that time.
+With SUD I intend to finally act up and develop something different,
+considering we have been [relying for 10 years on a tool that could
+have been trivially hacked all that
+time](https://www.zdnet.com/article/10-years-old-sudo-bug-lets-linux-users-gain-root-level-access/). In
+doing so I do not intend to cover all use-cases addressed by `sudo`
+and its plugins, but only the most common one of allowing a specific
+user to execute commands as root or as another user.
 
 SUD takes inspiration from the suckless tool
 [sup](https://sup.dyne.org) and welcomes contributions from coders who
@@ -62,8 +76,8 @@ SUD will never, ever include integrations with systemd.
 ## How to build SUD from source
 
 Literate programming source-code starts from documentation which is
-then used to generate the source-code and a website. In case of SUD we
-use the [Literate Programming
+then used to generate the source-code and a website. In case of SUD
+I'm using the [Literate Programming
 System](https://github.com/zyedidia/Literate) written in D, which is
 included as a submodule in the `literate` sub-folder. Also
 [Pandoc](https://pandoc.org) is needed to render the README into its
