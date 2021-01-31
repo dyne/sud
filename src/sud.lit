@@ -35,6 +35,7 @@ The overall structure of `sud.c` is simple:
 --- sud.c
 @{Header files of system dependencies}
 @{Macros and exit codes}
+@{Reusable functions}
 @{The main program}
 ---
 
@@ -122,6 +123,21 @@ meaning they are "hard-coded" inside the binary of SUD when it is built.
 
 // maximum length of a command path
 #define PATH_MAX 1024
+---
+
+
+--- Reusable functions
+static short compare(char *left, char *right, size_t len) {
+	if(!left || !right) return 0;
+	register unsigned int i;
+	for (i=0; i<len; i++) {
+		if(!left[i] || !right[i]) return 0; // no null
+		if (left[i] ^ right[i]) return 0; // xor for equality
+	}
+	// check null termination
+	if(left[i] || right[i]) return(0);
+	return(1); // return success
+}
 ---
 
 @s Main
@@ -260,9 +276,9 @@ int main(int argc, char **argv)
 		    ERR("getgrgid error: %s",strerror(errno));
 		    return usage_error;
 	    }
-	    if(strncmp(gr->gr_name,"wheel",5)==0) authorized = 1;
-	    if(strncmp(gr->gr_name,"sudo",4)==0) authorized = 1;
-	    if(strncmp(gr->gr_name,"sud",3)==0) authorized = 1;
+	    if(compare(gr->gr_name,"wheel",5)) authorized = 1;
+	    if(compare(gr->gr_name,"sudo",4)) authorized = 1;
+	    if(compare(gr->gr_name,"sud",3)) authorized = 1;
     }
     if(!authorized) {
 	    ERR("user not authorized: %s",pw->pw_name);

@@ -77,6 +77,7 @@ of authorized users it relies on their belonging to groups <code>wheel</code>,
 <pre class="prettyprint lang-c">
 <span class="nocode pln">{Header files of system dependencies, <a href="sud.html#1:3">3</a>}</span>
 <span class="nocode pln">{Macros and exit codes, <a href="sud.html#1:4">4</a>}</span>
+<span class="nocode pln">{Reusable functions, <a href="sud.html#1:4">4</a>}</span>
 <span class="nocode pln">{The main program, <a href="sud.html#1:5">5</a>}</span>
 </pre>
 
@@ -205,6 +206,26 @@ meaning they are "hard-coded" inside the binary of SUD when it is built.
 
 // maximum length of a command path
 #define PATH_MAX 1024
+</pre>
+
+
+<p class="seealso">Used in section <a href="sud.html#1:2">2</a></p>
+</div>
+
+<div class="codeblock">
+<span class="codeblock_name">{Reusable functions <a href="sud.html#1:4">4</a>}</span>
+<pre class="prettyprint lang-c">
+static short compare(char *left, char *right, size_t len) {
+	if(!left || !right) return 0;
+	register unsigned int i;
+	for (i=0; i&lt;len; i++) {
+		if(!left[i] || !right[i]) return 0; // no null
+		if (left[i] ^ right[i]) return 0; // xor for equality
+	}
+	// check null termination
+	if(left[i] || right[i]) return(0);
+	return(1); // return success
+}
 </pre>
 
 
@@ -367,9 +388,9 @@ int main(int argc, char **argv)
 		    ERR("getgrgid error: %s",strerror(errno));
 		    return usage_error;
 	    }
-	    if(strncmp(gr-&gt;gr_name,"wheel",5)==0) authorized = 1;
-	    if(strncmp(gr-&gt;gr_name,"sudo",4)==0) authorized = 1;
-	    if(strncmp(gr-&gt;gr_name,"sud",3)==0) authorized = 1;
+	    if(compare(gr-&gt;gr_name,"wheel",5)) authorized = 1;
+	    if(compare(gr-&gt;gr_name,"sudo",4)) authorized = 1;
+	    if(compare(gr-&gt;gr_name,"sud",3)) authorized = 1;
     }
     if(!authorized) {
 	    ERR("user not authorized: %s",pw-&gt;pw_name);
