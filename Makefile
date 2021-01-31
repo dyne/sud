@@ -11,6 +11,12 @@ all: literate/bin/lit
 	gcc -std=c99 $(DEBUG_FLAGS) -I src -c src/parg.c
 	gcc -std=c99 $(DEBUG_FLAGS) sud.c parg.o -o sud
 
+release:
+	literate/bin/lit src/sud.lit
+	musl-gcc -O3 -std=c99 $(SECURE_FLAGS) -I src -c src/parg.c
+	musl-gcc -O3 -std=c99 $(SECURE_FLAGS) -I src -c sud.c
+	musl-gcc -static -O3 -std=c99 $(SECURE_FLAGS) sud.o parg.o -o sud
+
 literate: literate/bin/lit
 	make -C literate
 

@@ -273,8 +273,8 @@ released in public domain
     }
 
     // one could maintain a log of calls here
-    XXX("sud %s called by %s(%d) gid(%d)\n",
-        fullcmd, pw?pw-&gt;pw_name:"", uid, gid);
+    // XXX("sud %s called by %s(%d) gid(%d)\n",
+    //     fullcmd, pw?pw-&gt;pw_name:"", uid, gid);
 
     // command does not exist as binary on the filesystem
        if (lstat (fullcmd, &amp;st) == -1) {
@@ -289,7 +289,7 @@ released in public domain
 
     // get number of groups first
     getgrouplist(pw-&gt;pw_name, pw-&gt;pw_gid, NULL, &amp;ngroups);
-    __gid_t groups[ngroups];
+    gid_t groups[ngroups];
     // get the list of groups
     getgrouplist(pw-&gt;pw_name, pw-&gt;pw_gid, groups, &amp;ngroups);
     //example to print the groups name

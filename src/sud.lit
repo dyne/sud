@@ -99,7 +99,7 @@ int main(int argc, char **argv)
     struct stat st;
 
      // recognize current user
-    int uid, gid;
+    int uid;
     struct passwd *pw=0x0;
 
      // target privilege
@@ -186,7 +186,6 @@ released in public domain
 
     // get the called UID and GID
     uid = getuid ();
-    gid = getgid ();
 
     // get the username string from /etc/passwd
     pw = getpwuid( uid );
@@ -212,7 +211,7 @@ released in public domain
 
     // get number of groups first
     getgrouplist(pw->pw_name, pw->pw_gid, NULL, &ngroups);
-    __gid_t groups[ngroups];
+    gid_t groups[ngroups];
     // get the list of groups
     getgrouplist(pw->pw_name, pw->pw_gid, groups, &ngroups);
     //example to print the groups name

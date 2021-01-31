@@ -30,6 +30,15 @@ SUD is distributed as a static binary for various platforms on
 Binaries include [musl-libc](https://musl-libc.org) as a statically
 linked component.
 
+To start using sud on a 64bit GNU+Linux machine, simply do:
+
+```
+curl https://files.dyne.org/sud/sud_x86_64 > ~/Downloads/sud
+sudo install -o root -g root -p -m 4775 sud /usr/local/bin
+```
+
+Use `vigr` or edit `/etc/groups` to make sure your privileged users are in the `sudo` or `wheel` groups.
+
 ## Motivation
 
 This software is a direct response to the `sudo` tool which has been
@@ -49,12 +58,6 @@ are well incline to be suckless.
 
 SUD will never, ever include integrations with systemd.
 
-## Work in progress
-
-If you are watching this repo right now it means you are really
-interested in the topic or have been contacted by one of us. Please
-signal yourself [with an issue](https://github.com/dyne/sud/) and be
-welcome to entertain the merry folks gathering around this campfire.
 
 ## How to build SUD from source
 
@@ -74,6 +77,13 @@ homepage. To make sure it is ready for use:
 All the above should be possible on any operating system, if you don't
 know why is most likely because you don't know well enough the system
 you are running. Go find out.
+
+## Work in progress
+
+If you are watching this repo right now it means you are really
+interested in the topic or have been contacted by one of us. Please
+signal yourself [with an issue](https://github.com/dyne/sud/) and be
+welcome to entertain the merry folks gathering around this campfire.
 
 ## License
 

@@ -8,13 +8,16 @@
 <h2 id="downloads">Downloads</h2>
 <p>SUD is distributed as a static binary for various platforms on <a href="https://files.dyne.org/sud">files.dyne.org/sud</a></p>
 <p>Binaries include <a href="https://musl-libc.org">musl-libc</a> as a statically linked component.</p>
+<p>To start using sud on a 64bit GNU+Linux machine, simply do:</p>
+<pre><code>curl https://files.dyne.org/sud/sud_x86_64 &gt; ~/Downloads/sud
+sudo install -o root -g root -p -m 4775 sud /usr/local/bin
+</code></pre>
+<p>Use <code>vigr</code> or edit <code>/etc/groups</code> to make sure your privileged users are in the <code>sudo</code> or <code>wheel</code> groups.</p>
 <h2 id="motivation">Motivation</h2>
 <p>This software is a direct response to the <code>sudo</code> tool which has been adopted by major Linux and BSD distros while augmenting its complexity and <a href="https://cve.mitre.org/cgi-bin/cvekey.cgi?keyword=sudo">collecting vulnerabilities</a> last not least <a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-3156">CVE-2021-3156</a>.</p>
 <p>With SUD we intend to finally act up and develop something different, considering we have been relying for 10 years on something that could have been trivially hacked all that time.</p>
 <p>SUD takes inspiration from the suckless tool <a href="https://sup.dyne.org">sup</a> and welcomes contributions from coders who are well incline to be suckless.</p>
 <p>SUD will never, ever include integrations with systemd.</p>
-<h2 id="work-in-progress">Work in progress</h2>
-<p>If you are watching this repo right now it means you are really interested in the topic or have been contacted by one of us. Please signal yourself <a href="https://github.com/dyne/sud/">with an issue</a> and be welcome to entertain the merry folks gathering around this campfire.</p>
 <h2 id="how-to-build-sud-from-source">How to build SUD from source</h2>
 <p>Literate programming source-code starts from documentation which is then used to generate the source-code and a website. In case of SUD we use the <a href="https://github.com/zyedidia/Literate">Literate Programming System</a> written in D, which is included as a submodule in the <code>literate</code> sub-folder. Also <a href="https://pandoc.org">Pandoc</a> is needed to render the README into its homepage. To make sure it is ready for use:</p>
 <ol>
@@ -24,6 +27,8 @@
 <li>type <code>make</code></li>
 </ol>
 <p>All the above should be possible on any operating system, if you don't know why is most likely because you don't know well enough the system you are running. Go find out.</p>
+<h2 id="work-in-progress">Work in progress</h2>
+<p>If you are watching this repo right now it means you are really interested in the topic or have been contacted by one of us. Please signal yourself <a href="https://github.com/dyne/sud/">with an issue</a> and be welcome to entertain the merry folks gathering around this campfire.</p>
 <h2 id="license">License</h2>
 <p>SUD is designed and written by Denis Roio &lt;Jaromil @ dyne.org&gt;</p>
 <p>SUD is Copyright (C) 2021 by the Dyne.org foundation</p>
