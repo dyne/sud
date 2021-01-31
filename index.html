@@ -1,9 +1,19 @@
 <h1 id="sud--super-user-do">SUD :: Super User Do</h1>
 <p>This software aims to be a UNIX tool for generic secure usage when in need of privilege escalation. It is designed to run SUID, with &quot;super-user powers&quot; to execute things as root on the system it is installed.</p>
+<p>Main differences compared to sudo:</p>
+<ul>
+<li>Easier audit thanks to literate development methodology</li>
+<li>Fewer lines of code, fewer features, fewer dependencies</li>
+<li>No plugin system, not even dynamic linking of libraries</li>
+<li>No configuration file, no parsers</li>
+<li>Public domain licensing</li>
+</ul>
+<p>It doesn't covers all use-cases addressed by sudo, but a few common situations in which multi-user privilege isolation is a necessary and sufficient condition to safely operate a local or remote machine.</p>
 <h2 id="methodology">Methodology</h2>
 <p>SUD is designed for security: it leverages all possible measures to avoid vulnerabilities, primarily the reduction of complexity in its own design and implementation.</p>
-<p>SUD is software written following the <a href="https://en.wikipedia.org/wiki/Literate_programming">literate-programming</a> approach and welcomes reviews and contributions, also anonymous ones.</p>
+<p>SUD is software written following the <a href="https://en.wikipedia.org/wiki/Literate_programming">literate-programming</a> approach and welcomes reviews and contributions.</p>
 <p>You are welcome to read <a href="https://sud.dyne.org/sud.html">SUD's source-code and documentation</a>.</p>
+<p>Issues and contributions are processed via <a href="https://github.com/dyne/sud/">SUD's page on github</a>, or by sending me feedback and patches via private email.</p>
 <p>SUD is licensed as Public Domain in the hope to improve the security of UNIX systems at large. The portability of <code>sud</code> to any BSD and POSIX compliant system is a desirable feature and contributions are welcome.</p>
 <h2 id="downloads">Downloads</h2>
 <p>SUD is distributed as a static binary for various platforms on <a href="https://files.dyne.org/sud">files.dyne.org/sud</a></p>
@@ -37,7 +47,9 @@ sud -v | awk &#39;/sud.c/ {print $0}&#39;
 <h2 id="work-in-progress">Work in progress</h2>
 <p>If you are watching this repo right now it means you are really interested in the topic or have been contacted by one of us. Please signal yourself <a href="https://github.com/dyne/sud/">with an issue</a> and be welcome to entertain the merry folks gathering around this campfire.</p>
 <h2 id="license">License</h2>
-<p>SUD is designed and written by Denis Roio &lt;Jaromil @ dyne.org&gt;</p>
+<p>SUD is designed and written by Denis Roio &lt;Jaromil @ dyne.org&gt;.</p>
+<p>SUD redistributes the <a href="https://github.com/jibsen/parg">parg</a> library by Jørgen Ibsen.</p>
+<p>Code reviews were kindly contributed by members of the Veteran Unix Admins and the 2600 Hacker Quarterly online communities.</p>
 <p>SUD is Copyright (C) 2021 by the Dyne.org foundation</p>
 <p xmlns:dct="https://purl.org/dc/terms/" xmlns:vcard="https://www.w3.org/2001/vcard-rdf/3.0#">
   <a rel="license"

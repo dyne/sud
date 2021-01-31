@@ -5,6 +5,18 @@ need of privilege escalation. It is designed to run SUID, with
 "super-user powers" to execute things as root on the system it is
 installed.
 
+Main differences compared to sudo:
+
+- Easier audit thanks to literate development methodology
+- Fewer lines of code, fewer features, fewer dependencies
+- No plugin system, not even dynamic linking of libraries
+- No configuration file, no parsers
+- Public domain licensing
+
+It doesn't covers all use-cases addressed by sudo, but a few common
+situations in which multi-user privilege isolation is a necessary and
+sufficient condition to safely operate a local or remote machine.
+
 ## Methodology
 
 SUD is designed for security: it leverages all possible measures to
@@ -13,9 +25,11 @@ own design and implementation.
 
 SUD is software written following the
 [literate-programming](https://en.wikipedia.org/wiki/Literate_programming)
-approach and welcomes reviews and contributions, also anonymous ones.
+approach and welcomes reviews and contributions.
 
 You are welcome to read [SUD's source-code and documentation](https://sud.dyne.org/sud.html).
+
+Issues and contributions are processed via [SUD's page on github](https://github.com/dyne/sud/), or by sending me feedback and patches via private email.
 
 SUD is licensed as Public Domain in the hope to improve the security
 of UNIX systems at large. The portability of `sud` to any BSD and
@@ -101,7 +115,11 @@ welcome to entertain the merry folks gathering around this campfire.
 
 ## License
 
-SUD is designed and written by Denis Roio <Jaromil @ dyne.org>
+SUD is designed and written by Denis Roio <Jaromil @ dyne.org>.
+
+SUD redistributes the [parg](https://github.com/jibsen/parg) library by Jørgen Ibsen.
+
+Code reviews were kindly contributed by members of the Veteran Unix Admins and the 2600 Hacker Quarterly online communities.
 
 SUD is Copyright (C) 2021 by the Dyne.org foundation
 

@@ -45,24 +45,29 @@ body{min-width:200px;max-width:850px;margin:0 auto;padding:30px;}.chapter-nav{fo
 <h1>Super User Do</h1>
 <a name="1:1"><div class="section"><h4>1. Multi-user privilege escalation tool</h4></a>
 <p>This software aims to be a UNIX tool for generic secure usage when in
-need of privilege escalation. It is designed to run SUID, with
-"super-user powers" to execute things as root on the system it is
+need of privilege escalation, operated from a terminal command-line
+interface. It is designed to run SUID root (root owner, mode 4775)
+with "super-user powers" to execute things as root on the system it is
 installed. As such, it is designed for security, leveraging all
 possible measures to avoid vulnerabilities, including the reduction of
 complexity in its own source-code.
 </p>
-<p>The purpose of <code>sud</code> is to execute commands as root (super-user) or as
+<p>The purpose of SUD is to execute commands as root (super-user) or as
 other users that are configured on the system. For the configuration
 of authorized users it relies on their belonging to groups <code>wheel</code>,
-<code>sud</code> or <code>sudo</code>, for info see <code>vigr(8)</code> or <code>setuid(2)</code>.
+<code>sud</code> or <code>sudo</code>, for info see <code>vigr(8)</code> or <code>setgid(2)</code>.
 </p>
-<p>For more general instructions, start from the <a href="https://sud.dyne.org">homepage of
-SUD</a>.
+<p>For more general instructions, start from the <a href="https://sud.dyne.org">homepage of SUD</a>.
+</p>
+<p>To contribute and interact with issues, see the <a href="https://github.com/dyne/sud">github page of SUD</a>
 </p>
 
 </div>
 <a name="1:2"><div class="section"><h4>2. Code structure overview</h4></a>
-<p>The only source file is <code>sud.c</code>.
+<p>The main source file is <code>sud.c</code>.
+</p>
+<p>Auxiliary files to parse command-line arguments are <code>parg.h</code> and
+<code>parg.c</code> from the <a href="https://github.com/jibsen/parg">parg</a> project.
 </p>
 <p>The overall structure of <code>sud.c</code> is simple:
 </p>
@@ -78,6 +83,9 @@ SUD</a>.
 
 
 </div>
+<p>What follows is a journey across these sections.
+</p>
+
 </div>
 <a name="1:3"><div class="section"><h4>3. Headers</h4></a>
 <p>We want to have as less requirements as possible, so this list should
@@ -94,18 +102,77 @@ platform targets.
 #include &lt;stdlib.h&gt;
 #include &lt;errno.h&gt;
 #include &lt;string.h&gt;
-// lstat
+</pre>
+
+
+<p class="seealso">Used in section <a href="sud.html#1:2">2</a></p>
+</div>
+<p>Above is a pretty standard selection of headers to provide basic
+functionalities of i/o, terminal output and error reporting.
+</p>
+
+<div class="codeblock">
+<span class="codeblock_name">{Header files of system dependencies <a href="sud.html#1:3">3</a>} +=</span>
+<pre class="prettyprint lang-c">
 #include &lt;sys/types.h&gt;
 #include &lt;sys/stat.h&gt;
 #include &lt;unistd.h&gt;
 #include &lt;fcntl.h&gt;
-// getpwnam
+</pre>
+
+
+<p class="seealso">Used in section <a href="sud.html#1:2">2</a></p>
+</div>
+<p>Above are the necessary headers for
+<a href="https://man7.org/linux/man-pages/man2/lstat.2.html">lstat</a> which is
+the function used to check that the command being executed does not
+depends from a writable binary file.
+</p>
+
+<div class="codeblock">
+<span class="codeblock_name">{Header files of system dependencies <a href="sud.html#1:3">3</a>} +=</span>
+<pre class="prettyprint lang-c">
 #include &lt;pwd.h&gt;
-// getgrouplist
+</pre>
+
+
+<p class="seealso">Used in section <a href="sud.html#1:2">2</a></p>
+</div>
+<p>This header is necessary for
+<a href="https://man7.org/linux/man-pages/man3/getpwuid.3.html">getpwnam</a>
+which we use to query the password database (i.e. the local
+<code>/etc/passwd</code> file).
+</p>
+
+<div class="codeblock">
+<span class="codeblock_name">{Header files of system dependencies <a href="sud.html#1:3">3</a>} +=</span>
+<pre class="prettyprint lang-c">
 #include &lt;grp.h&gt;
-// local parg module
+</pre>
+
+
+<p class="seealso">Used in section <a href="sud.html#1:2">2</a></p>
+</div>
+<p>This is needed for
+<a href="https://man7.org/linux/man-pages/man3/getgrouplist.3.html">getgrouplist</a>
+which gives us a list of groups to which the user belongs.
+</p>
+
+<div class="codeblock">
+<span class="codeblock_name">{Header files of system dependencies <a href="sud.html#1:3">3</a>} +=</span>
+<pre class="prettyprint lang-c">
 #include "src/parg.h"
-// release stamp
+</pre>
+
+
+<p class="seealso">Used in section <a href="sud.html#1:2">2</a></p>
+</div>
+<p>This loads the <code>parg.h</code> module for argument parsing.
+</p>
+
+<div class="codeblock">
+<span class="codeblock_name">{Header files of system dependencies <a href="sud.html#1:3">3</a>} +=</span>
+<pre class="prettyprint lang-c">
 #ifdef RELEASE
 #include "stamp.h"
 #endif
@@ -114,8 +181,16 @@ platform targets.
 
 <p class="seealso">Used in section <a href="sud.html#1:2">2</a></p>
 </div>
+<p>At last the <code>stamp.h</code> is also included in case the <code>RELEASE</code> directive
+is defined at build time, which indicates the creation of a time stamp
+and of the checksum hash used to verify the integrity of SUD releases.
+</p>
+
 </div>
 <a name="1:4"><div class="section"><h4>4. Preprocessor directives</h4></a>
+<p>In this section there are values that are configured at build time,
+meaning they are "hard-coded" inside the binary of SUD when it is built.
+</p>
 
 <div class="codeblock">
 <span class="codeblock_name">{Macros and exit codes <a href="sud.html#1:4">4</a>}</span>
@@ -128,8 +203,7 @@ platform targets.
 #define XXX(fstr,...) { fprintf(stderr,fstr, ##__VA_ARGS__); fputc('\n',stderr); }
 #define ACT(fstr,...) { fprintf(stdout,fstr, ##__VA_ARGS__); fputc('\n',stdout); }
 
-// maximum length of a command string
-#define MAXCMD 512
+// maximum length of a command path
 #define PATH_MAX 1024
 </pre>
 
@@ -138,7 +212,9 @@ platform targets.
 </div>
 </div>
 <a name="1:5"><div class="section"><h4>5. Main</h4></a>
-<p>Now we come to the general layout of the <code>main()</code> function.
+<p>Now we come to the general layout of the <code>main()</code> function, which is
+run every time SUD is executed with arguments. It is composed of 5
+sections:
 </p>
 
 <div class="codeblock">
@@ -185,10 +261,6 @@ int main(int argc, char **argv)
 
 
 </div>
-<p>Commandline option parsing is made using the excellent
-<a href="https://github.com/jibsen/parg">parg</a> library by Jørgen Ibsen also
-released in public domain
-</p>
 
 <div class="codeblock">
 <span class="codeblock_name">{Parse command-line options <a href="sud.html#1:5">5</a>}</span>

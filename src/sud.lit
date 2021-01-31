@@ -7,24 +7,28 @@
 @s Multi-user privilege escalation tool
 
 This software aims to be a UNIX tool for generic secure usage when in
-need of privilege escalation. It is designed to run SUID, with
-"super-user powers" to execute things as root on the system it is
+need of privilege escalation, operated from a terminal command-line
+interface. It is designed to run SUID root (root owner, mode 4775)
+with "super-user powers" to execute things as root on the system it is
 installed. As such, it is designed for security, leveraging all
 possible measures to avoid vulnerabilities, including the reduction of
 complexity in its own source-code.
 
-
-The purpose of `sud` is to execute commands as root (super-user) or as
+The purpose of SUD is to execute commands as root (super-user) or as
 other users that are configured on the system. For the configuration
 of authorized users it relies on their belonging to groups `wheel`,
-`sud` or `sudo`, for info see `vigr(8)` or `setuid(2)`.
+`sud` or `sudo`, for info see `vigr(8)` or `setgid(2)`.
 
-For more general instructions, start from the [homepage of
-SUD](https://sud.dyne.org).
+For more general instructions, start from the [homepage of SUD](https://sud.dyne.org).
+
+To contribute and interact with issues, see the [github page of SUD](https://github.com/dyne/sud)
 
 @s Code structure overview
 
-The only source file is `sud.c`.
+The main source file is `sud.c`.
+
+Auxiliary files to parse command-line arguments are `parg.h` and
+`parg.c` from the [parg](https://github.com/jibsen/parg) project.
 
 The overall structure of `sud.c` is simple:
 
@@ -33,6 +37,8 @@ The overall structure of `sud.c` is simple:
 @{Macros and exit codes}
 @{The main program}
 ---
+
+What follows is a journey across these sections.
 
 @s Headers
 
@@ -47,24 +53,63 @@ platform targets.
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
-// lstat
+---
+
+Above is a pretty standard selection of headers to provide basic
+functionalities of i/o, terminal output and error reporting.
+
+--- Header files of system dependencies +=
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
-// getpwnam
+---
+
+Above are the necessary headers for
+[lstat](https://man7.org/linux/man-pages/man2/lstat.2.html) which is
+the function used to check that the command being executed does not
+depends from a writable binary file.
+
+--- Header files of system dependencies +=
 #include <pwd.h>
-// getgrouplist
+---
+
+This header is necessary for
+[getpwnam](https://man7.org/linux/man-pages/man3/getpwuid.3.html)
+which we use to query the password database (i.e. the local
+`/etc/passwd` file).
+
+--- Header files of system dependencies +=
 #include <grp.h>
-// local parg module
+---
+
+This is needed for
+[getgrouplist](https://man7.org/linux/man-pages/man3/getgrouplist.3.html)
+which gives us a list of groups to which the user belongs.
+
+--- Header files of system dependencies +=
 #include "src/parg.h"
-// release stamp
+---
+
+This loads the `parg.h` module for argument parsing.
+
+
+--- Header files of system dependencies +=
 #ifdef RELEASE
 #include "stamp.h"
 #endif
 ---
 
+At last the `stamp.h` is also included in case the `RELEASE` directive
+is defined at build time, which indicates the creation of a time stamp
+and of the checksum hash used to verify the integrity of SUD releases.
+
+
+
 @s Preprocessor directives
+
+In this section there are values that are configured at build time,
+meaning they are "hard-coded" inside the binary of SUD when it is built.
 
 --- Macros and exit codes
 #define VERSION "1.0.0"
@@ -75,14 +120,15 @@ platform targets.
 #define XXX(fstr,...) { fprintf(stderr,fstr, ##__VA_ARGS__); fputc('\n',stderr); }
 #define ACT(fstr,...) { fprintf(stdout,fstr, ##__VA_ARGS__); fputc('\n',stdout); }
 
-// maximum length of a command string
-#define MAXCMD 512
+// maximum length of a command path
 #define PATH_MAX 1024
 ---
 
 @s Main
 
-Now we come to the general layout of the `main()` function.
+Now we come to the general layout of the `main()` function, which is
+run every time SUD is executed with arguments. It is composed of 5
+sections:
 
 --- The main program
 int main(int argc, char **argv)
@@ -116,10 +162,6 @@ int main(int argc, char **argv)
      // authorization flag
      register short authorized = 0;
 ---
-
-Commandline option parsing is made using the excellent
-[parg](https://github.com/jibsen/parg) library by Jørgen Ibsen also
-released in public domain
 
 --- Parse command-line options
      int c, optind;
