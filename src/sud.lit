@@ -42,6 +42,7 @@ be kept short and eventually include `#ifdef` directives for specific
 platform targets.
 
 --- Header files of system dependencies
+#define _DEFAULT_SOURCE 1
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -55,8 +56,6 @@ platform targets.
 // getpwnam
 #include <pwd.h>
 #include "src/parg.h"
-// realpath
-#include <limits.h>
 ---
 
 @s Preprocessor directives
