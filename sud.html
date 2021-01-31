@@ -101,6 +101,9 @@ platform targets.
 #include &lt;fcntl.h&gt;
 // getpwnam
 #include &lt;pwd.h&gt;
+// getgrouplist
+#include &lt;grp.h&gt;
+// local parg module
 #include "src/parg.h"
 </pre>
 
@@ -109,9 +112,6 @@ platform targets.
 </div>
 </div>
 <a name="1:4"><div class="section"><h4>4. Preprocessor directives</h4></a>
-<p>The <code>status</code> variable will tell the operating system if the run was successful or not, 
-and <code>prog_name</code> is used in case there’s an error message to be printed.
-</p>
 
 <div class="codeblock">
 <span class="codeblock_name">{Macros and exit codes <a href="sud.html#1:4">4</a>}</span>
@@ -147,7 +147,6 @@ int main(int argc, char **argv)
 <span class="nocode pln">    {Verify privileged access, <a href="sud.html#1:5">5</a>}</span>
 <span class="nocode pln">    {Execute the command, <a href="sud.html#1:5">5</a>}</span>
 <span class="nocode pln">    {Print any errors, <a href="sud.html#1:5">5</a>}</span>
-    return status;
 }
 </pre>
 
@@ -158,18 +157,25 @@ int main(int argc, char **argv)
 <div class="codeblock">
 <span class="codeblock_name">{Declare variables <a href="sud.html#1:5">5</a>}</span>
 <pre class="prettyprint lang-c">
-	int status = OK;    // exit status of command, initially OK
-	char *prog_name = "sud";    // who we are
+     // full path to command
+    char fullcmd[PATH_MAX] = {0x0};
 
-    static char fullcmd[PATH_MAX] = {0x0};
-
-    struct passwd *pw;
+     // verify target command executable
     struct stat st;
 
-    static int uid, gid;
-    static int target_uid=0;
+     // recognize current user
+    int uid, gid;
+    struct passwd *pw=0x0;
 
-    prog_name = argv[0];
+     // target privilege
+    int target_uid=0;
+
+     // cycling through groups to verify authorization
+    int ngroups = 0;
+    struct group* gr;
+
+     // authorization flag
+     register short authorized = 0;
 </pre>
 
 
@@ -214,11 +220,11 @@ released in public domain
 	     break;
 	     case 'h':
 	     help:
-		     ERR("Usage: %s [-h] [-v] [-u USER] COMMAND",prog_name);
+		     ERR("Usage: %s [-h] [-v] [-u USER] COMMAND",argv[0]);
 		     return OK;
 		     break;
 	     case 'v':
-		     ERR("%s 1.0.0",prog_name);
+		     ERR("%s 1.0.0",argv[0]);
 		     return OK;
 		     break;
 	     case '?':
@@ -254,14 +260,18 @@ released in public domain
 <div class="codeblock">
 <span class="codeblock_name">{Verify privileged access <a href="sud.html#1:5">5</a>}</span>
 <pre class="prettyprint lang-c">
+
     // get the called UID and GID
     uid = getuid ();
     gid = getgid ();
-    // copy the execve argument locally
-    // snprintf(fullcmd,MAXCMD,"%s",argv[ps.optind]);
 
     // get the username string from /etc/passwd
     pw = getpwuid( uid );
+    if(!pw) {
+	    ERR("uid not found in passwd: %s",strerror(errno));
+	    return usage_error;
+    }
+
     // one could maintain a log of calls here
     XXX("sud %s called by %s(%d) gid(%d)\n",
         fullcmd, pw?pw-&gt;pw_name:"", uid, gid);
@@ -274,6 +284,27 @@ released in public domain
     if (st.st_mode &amp; 0022) {
 	    // command has wrong permissions (writable to others)
 	    ERR("cannot run a binary others can write: %s", fullcmd);
+	    return usage_error;
+    }
+
+    // get number of groups first
+    getgrouplist(pw-&gt;pw_name, pw-&gt;pw_gid, NULL, &amp;ngroups);
+    __gid_t groups[ngroups];
+    // get the list of groups
+    getgrouplist(pw-&gt;pw_name, pw-&gt;pw_gid, groups, &amp;ngroups);
+    //example to print the groups name
+    for (int i = 0; i &lt; ngroups; i++){
+	    gr = getgrgid(groups[i]);
+	    if(!gr) {
+		    ERR("getgrgid error: %s",strerror(errno));
+		    return usage_error;
+	    }
+	    if(strncmp(gr-&gt;gr_name,"wheel",5)==0) authorized = 1;
+	    if(strncmp(gr-&gt;gr_name,"sudo",4)==0) authorized = 1;
+	    if(strncmp(gr-&gt;gr_name,"sud",3)==0) authorized = 1;
+    }
+    if(!authorized) {
+	    ERR("user not authorized: %s",pw-&gt;pw_name);
 	    return usage_error;
     }
 </pre>
