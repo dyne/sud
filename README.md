@@ -9,9 +9,12 @@ Main differences compared to sudo:
 
 - Easier audit thanks to literate development methodology
 - Fewer lines of code, fewer features, fewer dependencies
-- No plugin system, not even dynamic linking of libraries
 - No configuration file, no parsers
 - Public domain licensing
+
+SUD can either be built as a static executable (no dynamic linking of libraries)
+or dynamically linked to allow PAM authentication module to do its work
+by asking users to confirm their password.
 
 It doesn't covers all use-cases addressed by sudo, but a few common
 situations in which multi-user privilege isolation is a necessary and
@@ -27,9 +30,9 @@ SUD is software written following the
 [literate-programming](https://en.wikipedia.org/wiki/Literate_programming)
 approach and welcomes reviews and contributions.
 
-You are welcome to read [SUD's source-code and documentation](https://sud.dyne.org/sud.html).
+You are welcome to read [SUD's source-code and documentation](https://sud.dyne.org).
 
-Issues and contributions are processed via [SUD's page on github](https://github.com/dyne/sud/), or by sending me feedback and patches via private email.
+Contribute via [issues](dyne/sud/issues) or by [sending me a private email](https://jaromil.dyne.org).
 
 SUD is licensed as Public Domain in the hope to improve the security
 of UNIX systems at large. The portability of `sud` to any BSD and
@@ -47,17 +50,26 @@ linked component.
 To start using sud on a 64bit GNU+Linux machine, simply do:
 
 ```
-curl https://files.dyne.org/sud/sud_x86_64 > ~/Downloads/sud
-sudo install -o root -g root -m 4775 ~/Downloads/sud /usr/local/bin
+curl https://files.dyne.org/sud/sud_gnu_64 > ~/Downloads/sud
 ```
 
-Use `vigr` or edit `/etc/groups` to make sure your privileged users are in the `sudo` or `wheel` groups.
+Or on Apple/OSX:
+```
+curl https://files.dyne.org/sud/sud_osx_64 > ~/Downloads/sud
+```
+
+Then to activate it must be in the path and made SUID:
+```
+sudo install -m 4755 -o root -g 0 ~/Downloads/sud /usr/local/bin/sud
+```
+
+Use `vigr` or edit `/etc/group` to make sure your privileged users are in the `admin`, `wheel` or `sudo` groups.
 
 To verify the binary integrity of SUD use `sud -v` and compare the SHA512 to the [hash published here](https://files.dyne.org/sud/SHASUMS.txt) and signed with [my gpg key](https://jaromil.dyne.org/jaromil.pub): it ties the binary to the `sud.c` sourcecode used to build it. Here a shell snippet that does just that:
 
 ```
 hash=https://files.dyne.org/sud/SHASUMS.txt
-curl -s https://jaromil.dyne.org/jaromil.pub | gpg --import 
+curl -s https://jaromil.dyne.org/jaromil.pub | gpg --import
 curl -s $hash | gpg --verify
 curl -s $hash | awk '/sud.c$/ {print $0}'
 sud -v | awk '/sud.c/ {print $0}'
@@ -97,10 +109,11 @@ included as a submodule in the `literate` sub-folder. Also
 [Pandoc](https://pandoc.org) is needed to render the README into its
 homepage. To make sure it is ready for use:
 
-1. install `dub` the D package registry
-2. install `pandoc` for markdown rendering
-2. make sure the `literate` git submodule is initialised and updated
-3. type `make`
+1. install `gcc` or another C compiler
+2. install `dub` the D package registry and a D compiler
+3. install `pandoc` for markdown rendering
+4. make sure the `literate` git submodule is initialised and updated
+5. type `make` or read the `Makefile` for other targets
 
 All the above should be possible on any operating system, if you don't
 know why is most likely because you don't know well enough the system
@@ -108,10 +121,10 @@ you are running. Go find out.
 
 ## Work in progress
 
-If you are watching this repo right now it means you are really
-interested in the topic or have been contacted by one of us. Please
-signal yourself [with an issue](https://github.com/dyne/sud/) and be
-welcome to entertain the merry folks gathering around this campfire.
+If you are reading down to here it means you are really
+interested. Please signal yourself and be
+welcome to entertain the merry folks gathering around this campfire,
+there is always room for improvement.
 
 ## License
 

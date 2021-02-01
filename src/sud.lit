@@ -4,31 +4,29 @@
 
 @title Super User Do
 
+
 @s Multi-user privilege escalation tool
+
+This is the literate code documentation of SUD, including its sourcecode.
+
+For instructions on how to install, build and contribute
+see [github.com/dyne/sud](https://github.com/dyne/sud).
+
+Stable releases can be downloaded from [files.dyne.org/sud](https://files.dyne.org/sud)
+---
+---
 
 This software aims to be a UNIX tool for generic secure usage when in
 need of privilege escalation, operated from a terminal command-line
-interface. It is designed to run SUID root (root owner, mode 4775)
+interface. It is designed to run SUID root (root owner, mode 4755)
 with "super-user powers" to execute things as root on the system it is
-installed. As such, it is designed for security, leveraging all
-possible measures to avoid vulnerabilities, including the reduction of
-complexity in its own source-code.
-
-The purpose of SUD is to execute commands as root (super-user) or as
-other users that are configured on the system. For the configuration
-of authorized users it relies on their belonging to groups `wheel`,
-`sud` or `sudo`, for info see `vigr(8)` or `setgid(2)`.
-
-For more general instructions, start from the [homepage of SUD](https://sud.dyne.org).
-
-To contribute and interact with issues, see the [github page of SUD](https://github.com/dyne/sud)
+installed. SUD purpose is security through awareness: it leverages all
+possible measures to avoid vulnerabilities, primarily the reduction of
+complexity in its own source-code and its documentation.
 
 @s Code structure overview
 
 The main source file is `sud.c`.
-
-Auxiliary files to parse command-line arguments are `parg.h` and
-`parg.c` from the [parg](https://github.com/jibsen/parg) project.
 
 The overall structure of `sud.c` is simple:
 
@@ -99,8 +97,7 @@ configured password modules.
 #include "src/parg.h"
 ---
 
-This loads the `parg.h` module for argument parsing.
-
+This loads the [parg](https://github.com/jibsen/parg) library for command-line argument parsing.
 
 --- Header files of system dependencies +=
 #ifdef RELEASE
@@ -243,8 +240,6 @@ Below the first section declares variables that are used inside main:
      // verify target command executable
     struct stat st;
 
-     // current user
-    int uid;
      // target privilege
     int target_uid=0;
 
@@ -253,7 +248,7 @@ Below the first section declares variables that are used inside main:
     struct group* gr;
 
      // authorization flag
-    register short authorized = 0;
+    short authorized = 0;
 ---
 
 @s Parse command-line options
@@ -366,9 +361,6 @@ Checks implemented are:
 
 --- Verify privileged access
 
-    // get the called UID and GID
-    uid = getuid ();
-
     // get number of groups first
     ngroups = getgroups(0, NULL);
     gid_t *groups = calloc(ngroups, sizeof(gid_t));
@@ -387,7 +379,7 @@ Checks implemented are:
     }
 	free(groups);
     if(!authorized) {
-	    ERR("[sud] user not authorized: %u",uid);
+	    ERR("[sud] user not authorized: %s (%s)",getlogin(),getenv("USER"));
 	    return usage_error;
     }
 
@@ -407,7 +399,7 @@ Checks implemented are:
                struct pam_conv pam_conversation = { pam_converse, NULL };
                pam_handle_t* pamh;
                int res;
-               res = pam_start("sud", pw->pw_name, &pam_conversation, &pamh);
+               res = pam_start("sud", getlogin(), &pam_conversation, &pamh);
                if(res != PAM_SUCCESS) {
 	               ERR("PAM start failure: %s",pam_strerror(pamh, res));
 	               return usage_error;
