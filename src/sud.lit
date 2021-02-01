@@ -192,12 +192,12 @@ pam_converse (int num_msg, const struct pam_message **msgs,
 	    case PAM_TEXT_INFO: style = "PAM_TEXT_INFO"; break;
 	    default: ERR("Internal error: invalid msg_style: %d", msg->msg_style); break;
 	    }
-	    XXX("conversation(): msg[%d], style %s, msg = \"%s\"", i, style, msg->msg);
+	    // XXX("conversation(): msg[%d], style %s, msg = \"%s\"", i, style, msg->msg);
 
 	    switch (msg->msg_style) {
 	    case PAM_PROMPT_ECHO_OFF:
 		    // reply with password
-		    response->resp = strdup(password_input); // FIXME
+		    response->resp = password_input;
 		    if (!response->resp)
 			    return PAM_CONV_ERR;
 		    break;

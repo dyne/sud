@@ -171,7 +171,8 @@ which gives us a list of groups to which the user belongs.
 
 <p class="seealso">Used in section <a href="sud.html#1:2">2</a></p>
 </div>
-<p>LibPAM support for user authentication through system configured password modules.
+<p>Optional LibPAM support for user authentication through system
+configured password modules.
 </p>
 
 <div class="codeblock">
@@ -228,7 +229,9 @@ meaning they are "hard-coded" inside the binary of SUD when it is built.
 </div>
 </div>
 <a name="1:5"><div class="section"><h4>5. Global variables</h4></a>
-<p>Variables whose scope is global to the execution of this program and visible to all its functions. Their names must be unique and should not be clashing with variables local to functions.
+<p>Variables whose scope is global to the execution of this program and
+visible to all its functions. Their names must be unique and should
+not be clashing with variables local to functions.
 </p>
 
 <div class="codeblock">
@@ -290,12 +293,12 @@ pam_converse (int num_msg, const struct pam_message **msgs,
 	    case PAM_TEXT_INFO: style = "PAM_TEXT_INFO"; break;
 	    default: ERR("Internal error: invalid msg_style: %d", msg-&gt;msg_style); break;
 	    }
-	    XXX("conversation(): msg[%d], style %s, msg = \"%s\"", i, style, msg-&gt;msg);
+	    // XXX("conversation(): msg[%d], style %s, msg = \"%s\"", i, style, msg-&gt;msg);
 
 	    switch (msg-&gt;msg_style) {
 	    case PAM_PROMPT_ECHO_OFF:
 		    // reply with password
-		    response-&gt;resp = strdup(password_input); // FIXME
+		    response-&gt;resp = password_input;
 		    if (!response-&gt;resp)
 			    return PAM_CONV_ERR;
 		    break;
