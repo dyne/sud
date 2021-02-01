@@ -244,10 +244,8 @@ int main(int argc, char **argv)
      // verify target command executable
     struct stat st;
 
-     // recognize current user
+     // current user
     int uid;
-    struct passwd *pw=0x0;
-
      // target privilege
     int target_uid=0;
 
@@ -333,13 +331,6 @@ int main(int argc, char **argv)
     // get the called UID and GID
     uid = getuid ();
 
-    // get the username string from /etc/passwd
-    pw = getpwuid( uid );
-    if(!pw) {
-	    ERR("uid not found in passwd: %s",strerror(errno));
-	    return usage_error;
-    }
-
     // one could maintain a log of calls here
     // XXX("sud %s called by %s(%d) gid(%d)\n",
     //     fullcmd, pw?pw->pw_name:"", uid, gid);
@@ -360,8 +351,9 @@ int main(int argc, char **argv)
 	    if(compare(gr->gr_name,"sudo",4)) authorized = 1;
 	    if(compare(gr->gr_name,"sud",3)) authorized = 1;
     }
+	free(groups);
     if(!authorized) {
-	    ERR("user not authorized: %s",pw->pw_name);
+	    ERR("[sud] user not authorized: %u",uid);
 	    return usage_error;
     }
 

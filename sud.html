@@ -357,10 +357,8 @@ int main(int argc, char **argv)
      // verify target command executable
     struct stat st;
 
-     // recognize current user
+     // current user
     int uid;
-    struct passwd *pw=0x0;
-
      // target privilege
     int target_uid=0;
 
@@ -458,35 +456,29 @@ int main(int argc, char **argv)
     // get the called UID and GID
     uid = getuid ();
 
-    // get the username string from /etc/passwd
-    pw = getpwuid( uid );
-    if(!pw) {
-	    ERR("uid not found in passwd: %s",strerror(errno));
-	    return usage_error;
-    }
-
     // one could maintain a log of calls here
     // XXX("sud %s called by %s(%d) gid(%d)\n",
     //     fullcmd, pw?pw-&gt;pw_name:"", uid, gid);
 
     // get number of groups first
-    getgrouplist(pw-&gt;pw_name, pw-&gt;pw_gid, NULL, &amp;ngroups);
-    gid_t groups[ngroups];
+    ngroups = getgroups(0, NULL);
+    gid_t *groups = calloc(ngroups, sizeof(gid_t));
     // get the list of groups
-    getgrouplist(pw-&gt;pw_name, pw-&gt;pw_gid, groups, &amp;ngroups);
-    //example to print the groups name
+    getgroups(ngroups, groups);
     for (int i = 0; i &lt; ngroups; i++){
 	    gr = getgrgid(groups[i]);
 	    if(!gr) {
 		    ERR("getgrgid error: %s",strerror(errno));
 		    return usage_error;
 	    }
+	    if(compare(gr-&gt;gr_name,"admin",5)) authorized = 1; // OSX
 	    if(compare(gr-&gt;gr_name,"wheel",5)) authorized = 1;
 	    if(compare(gr-&gt;gr_name,"sudo",4)) authorized = 1;
 	    if(compare(gr-&gt;gr_name,"sud",3)) authorized = 1;
     }
+	free(groups);
     if(!authorized) {
-	    ERR("user not authorized: %s",pw-&gt;pw_name);
+	    ERR("[sud] user not authorized: %u",uid);
 	    return usage_error;
     }
 
