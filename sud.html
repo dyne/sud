@@ -164,7 +164,7 @@ which gives us a list of groups to which the user belongs.
 <span class="codeblock_name">{Header files of system dependencies <a href="sud.html#1:3">3</a>} +=</span>
 <pre class="prettyprint lang-c">
 #ifdef PAM_AUTH
-#include &lt;pam_appl.h&gt;
+#include &lt;security/pam_appl.h&gt;
 #endif
 </pre>
 
@@ -296,6 +296,10 @@ pam_converse (int num_msg, const struct pam_message **msgs,
 	    // XXX("conversation(): msg[%d], style %s, msg = \"%s\"", i, style, msg-&gt;msg);
 
 	    switch (msg-&gt;msg_style) {
+		    case PAM_TEXT_INFO:
+			    ACT("[sud] %s",msg-&gt;msg);
+			    break;
+
 	    case PAM_PROMPT_ECHO_OFF:
 		    // reply with password
 		    response-&gt;resp = password_input;
@@ -485,7 +489,7 @@ int main(int argc, char **argv)
 	    ERR("user not authorized: %s",pw-&gt;pw_name);
 	    return usage_error;
     }
-	
+
     // command must exist as binary on the filesystem
        if (lstat (fullcmd, &amp;st) == -1) {
 	    ERR("cannot stat command: %s", fullcmd);
@@ -507,7 +511,7 @@ int main(int argc, char **argv)
 	               ERR("PAM start failure: %s",pam_strerror(pamh, res));
 	               return usage_error;
                }
-               password_input = getpass("Password: ");
+               password_input = getpass("[sud] Password: ");
                res = pam_authenticate(pamh, 0);
                if(res != PAM_SUCCESS) {
 	               ERR("PAM auth failure: %s",pam_strerror(pamh, res));
@@ -538,7 +542,7 @@ int main(int argc, char **argv)
 	               ERR("PAM end failure: %s",pam_strerror(pamh, res));
 	               return usage_error;
                }
-               ACT("PAM authentication: %s", "successful");
+               // ACT("PAM authentication: %s", "successful");
 #endif
 </pre>
 
