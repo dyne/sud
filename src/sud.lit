@@ -51,7 +51,6 @@ platform targets.
 --- Header files of system dependencies
 #define _DEFAULT_SOURCE 1
 #include <stdio.h>
-#include <stddef.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
@@ -61,10 +60,8 @@ Above is a pretty standard selection of headers to provide basic
 functionalities of i/o, terminal output and error reporting.
 
 --- Header files of system dependencies +=
-#include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <fcntl.h>
 ---
 
 Above are the necessary headers for
@@ -123,7 +120,7 @@ In this section there are values that are configured at build time,
 meaning they are "hard-coded" inside the binary of SUD when it is built.
 
 --- Macros and exit codes
-#define VERSION "1.0.0"
+#define VERSION "1.1.0"
 #define OK 0                  // status code for successful run
 #define usage_error 1         // status code for command not found
 
@@ -237,6 +234,8 @@ int main(int argc, char **argv)
 }
 ---
 
+Below the first section declares variables that are used inside main:
+
 --- Declare variables
      // full path to command
     char fullcmd[PATH_MAX] = {0x0};
@@ -254,15 +253,36 @@ int main(int argc, char **argv)
     struct group* gr;
 
      // authorization flag
-     register short authorized = 0;
+    register short authorized = 0;
 ---
+
+@s Parse command-line options
+
+The next section parses commandline options using the included `parg` library.
 
 --- Parse command-line options
      int c, optind;
      struct parg_state ps;
      parg_init(&ps);
      while ((c = parg_getopt(&ps, argc, argv, "hvu:")) != -1) {
+---
+
+This following check is necessary to avoid parsing options if a command was already selected:
+we make it mandatory to place options before the command and its arguments.
+Once a command is recognized, then all following arguments belong to it.
+
+--- Parse command-line options +=
 	     if(fullcmd[0]) break;
+---
+
+The `case 1` switch is the one that parses the command to execute and its arguments.
+
+A check is made to see that the command is included in the `PATH` environmental variable,
+unless it is specified as an absolute path to file.
+
+This check is a bit sloppy and could be improved.
+
+--- Parse command-line options +=
 	     switch (c) {
 
 	     case 1: // stop to parse options, save the command and parse its arguments
@@ -287,6 +307,13 @@ int main(int argc, char **argv)
 			     }
 	     }
 	     break;
+---
+
+A few traditional options
+- option `-h` prints out help
+- option `-v` prints out the version and binary hash checksum
+
+--- Parse command-line options +=
 	     case 'h':
 	     help:
 		     ACT("Usage: %s [-h] [-v] [-u USER] COMMAND",argv[0]);
@@ -304,6 +331,11 @@ int main(int argc, char **argv)
 		     ERR("unknown option -%c", ps.optopt);
 		     return usage_error;
 		     break;
+---
+
+The option `-u` is followed by an argument and indicates a different user than root.
+
+--- Parse command-line options +=
 	     case 'u':
 		     {
 			     struct passwd *puid;
@@ -319,21 +351,23 @@ int main(int argc, char **argv)
 		     break;
 	     }
      }
-     // for (c = ps.optind; c < argc; ++c) {
-	 //     ERR("leftover '%s'", argv[c]);
-     // }
      if(argc==1) goto help;
-     // XXX("optind: %i",ps.optind);
 ---
+
+@s Authenticate
+
+Here we are done parsing the command and selections and we start checking if the user is allowed to escalate privileges. There are various important checks done here, which is the section where code is most sensitive. From here onwards the golden rule should be: better safe than sorry!
+
+Checks implemented are:
+
+1. the user is part of at least one group among: `admin`, `wheel`, `sudo` or `sud`.
+2. the command is an existing file that is executable and not writable to anyone
+3. optionally PAM authentication is used and users are prompted for their password
 
 --- Verify privileged access
 
     // get the called UID and GID
     uid = getuid ();
-
-    // one could maintain a log of calls here
-    // XXX("sud %s called by %s(%d) gid(%d)\n",
-    //     fullcmd, pw?pw->pw_name:"", uid, gid);
 
     // get number of groups first
     ngroups = getgroups(0, NULL);
@@ -413,6 +447,10 @@ int main(int argc, char **argv)
 #endif
 ---
 
+@s Command execution
+
+If the main function has kept executing until here, then it means the user is authorized. Then it proceeds calling `setuid` and `seteuid` to elevate the privileges of the running process. At last it uses `execve` to execute the command followed by its arguments.
+
 --- Execute the command
 
        // privilege escalation
@@ -429,9 +467,11 @@ int main(int argc, char **argv)
     execve(fullcmd, &argv[optind], NULL); //&argv[ps.optind], NULL);
 ---
 
+Any error returned by the previous `execve` call is interpreted and printed to screen.
+
 ---Print any errors
     // execv returns only on errors
     ERR("execv: %s", strerror(errno));
 ---
 
-
+That's all folks!

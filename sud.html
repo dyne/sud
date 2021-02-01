@@ -100,7 +100,6 @@ platform targets.
 <pre class="prettyprint lang-c">
 #define _DEFAULT_SOURCE 1
 #include &lt;stdio.h&gt;
-#include &lt;stddef.h&gt;
 #include &lt;stdlib.h&gt;
 #include &lt;errno.h&gt;
 #include &lt;string.h&gt;
@@ -116,10 +115,8 @@ functionalities of i/o, terminal output and error reporting.
 <div class="codeblock">
 <span class="codeblock_name">{Header files of system dependencies <a href="sud.html#1:3">3</a>} +=</span>
 <pre class="prettyprint lang-c">
-#include &lt;sys/types.h&gt;
 #include &lt;sys/stat.h&gt;
 #include &lt;unistd.h&gt;
-#include &lt;fcntl.h&gt;
 </pre>
 
 
@@ -212,7 +209,7 @@ meaning they are "hard-coded" inside the binary of SUD when it is built.
 <div class="codeblock">
 <span class="codeblock_name">{Macros and exit codes <a href="sud.html#1:4">4</a>}</span>
 <pre class="prettyprint lang-c">
-#define VERSION "1.0.0"
+#define VERSION "1.1.0"
 #define OK 0                  // status code for successful run
 #define usage_error 1         // status code for command not found
 
@@ -296,9 +293,9 @@ pam_converse (int num_msg, const struct pam_message **msgs,
 	    // XXX("conversation(): msg[%d], style %s, msg = \"%s\"", i, style, msg-&gt;msg);
 
 	    switch (msg-&gt;msg_style) {
-		    case PAM_TEXT_INFO:
-			    ACT("[sud] %s",msg-&gt;msg);
-			    break;
+		case PAM_TEXT_INFO:
+			ACT("[sud] %s",msg-&gt;msg);
+			break;
 
 	    case PAM_PROMPT_ECHO_OFF:
 		    // reply with password
@@ -337,16 +334,18 @@ sections:
 int main(int argc, char **argv)
 {
 <span class="nocode pln">	{Declare variables, <a href="sud.html#1:6">6</a>}</span>
-<span class="nocode pln">    {Parse command-line options, <a href="sud.html#1:6">6</a>}</span>
-<span class="nocode pln">    {Verify privileged access, <a href="sud.html#1:6">6</a>}</span>
-<span class="nocode pln">    {Execute the command, <a href="sud.html#1:6">6</a>}</span>
-<span class="nocode pln">    {Print any errors, <a href="sud.html#1:6">6</a>}</span>
+<span class="nocode pln">    {Parse command-line options, <a href="sud.html#1:7">7</a>}</span>
+<span class="nocode pln">    {Verify privileged access, <a href="sud.html#1:8">8</a>}</span>
+<span class="nocode pln">    {Execute the command, <a href="sud.html#1:9">9</a>}</span>
+<span class="nocode pln">    {Print any errors, <a href="sud.html#1:9">9</a>}</span>
 }
 </pre>
 
 
 <p class="seealso">Used in section <a href="sud.html#1:2">2</a></p>
 </div>
+<p>Below the first section declares variables that are used inside main:
+</p>
 
 <div class="codeblock">
 <span class="codeblock_name">{Declare variables <a href="sud.html#1:6">6</a>}</span>
@@ -367,21 +366,54 @@ int main(int argc, char **argv)
     struct group* gr;
 
      // authorization flag
-     register short authorized = 0;
+    register short authorized = 0;
 </pre>
 
 
 
 </div>
+</div>
+<a name="1:7"><div class="section"><h4>7. Parse command-line options</h4></a>
+<p>The next section parses commandline options using the included <code>parg</code> library.
+</p>
 
 <div class="codeblock">
-<span class="codeblock_name">{Parse command-line options <a href="sud.html#1:6">6</a>}</span>
+<span class="codeblock_name">{Parse command-line options <a href="sud.html#1:7">7</a>}</span>
 <pre class="prettyprint lang-c">
      int c, optind;
      struct parg_state ps;
      parg_init(&amp;ps);
      while ((c = parg_getopt(&amp;ps, argc, argv, "hvu:")) != -1) {
+</pre>
+
+
+<p class="seealso">Used in section <a href="sud.html#1:6">6</a></p>
+</div>
+<p>This following check is necessary to avoid parsing options if a command was already selected:
+we make it mandatory to place options before the command and its arguments.
+Once a command is recognized, then all following arguments belong to it.
+</p>
+
+<div class="codeblock">
+<span class="codeblock_name">{Parse command-line options <a href="sud.html#1:7">7</a>} +=</span>
+<pre class="prettyprint lang-c">
 	     if(fullcmd[0]) break;
+</pre>
+
+
+<p class="seealso">Used in section <a href="sud.html#1:6">6</a></p>
+</div>
+<p>The <code>case 1</code> switch is the one that parses the command to execute and its arguments.
+</p>
+<p>A check is made to see that the command is included in the <code>PATH</code> environmental variable,
+unless it is specified as an absolute path to file.
+</p>
+<p>This check is a bit sloppy and could be improved.
+</p>
+
+<div class="codeblock">
+<span class="codeblock_name">{Parse command-line options <a href="sud.html#1:7">7</a>} +=</span>
+<pre class="prettyprint lang-c">
 	     switch (c) {
 
 	     case 1: // stop to parse options, save the command and parse its arguments
@@ -406,6 +438,23 @@ int main(int argc, char **argv)
 			     }
 	     }
 	     break;
+</pre>
+
+
+<p class="seealso">Used in section <a href="sud.html#1:6">6</a></p>
+</div>
+<p>A few traditional options
+</p>
+<ul>
+<li>option <code>-h</code> prints out help
+</li>
+<li>option <code>-v</code> prints out the version and binary hash checksum
+</li>
+</ul>
+
+<div class="codeblock">
+<span class="codeblock_name">{Parse command-line options <a href="sud.html#1:7">7</a>} +=</span>
+<pre class="prettyprint lang-c">
 	     case 'h':
 	     help:
 		     ACT("Usage: %s [-h] [-v] [-u USER] COMMAND",argv[0]);
@@ -423,6 +472,17 @@ int main(int argc, char **argv)
 		     ERR("unknown option -%c", ps.optopt);
 		     return usage_error;
 		     break;
+</pre>
+
+
+<p class="seealso">Used in section <a href="sud.html#1:6">6</a></p>
+</div>
+<p>The option <code>-u</code> is followed by an argument and indicates a different user than root.
+</p>
+
+<div class="codeblock">
+<span class="codeblock_name">{Parse command-line options <a href="sud.html#1:7">7</a>} +=</span>
+<pre class="prettyprint lang-c">
 	     case 'u':
 		     {
 			     struct passwd *puid;
@@ -438,27 +498,33 @@ int main(int argc, char **argv)
 		     break;
 	     }
      }
-     // for (c = ps.optind; c &lt; argc; ++c) {
-	 //     ERR("leftover '%s'", argv[c]);
-     // }
      if(argc==1) goto help;
-     // XXX("optind: %i",ps.optind);
 </pre>
 
 
-
+<p class="seealso">Used in section <a href="sud.html#1:6">6</a></p>
 </div>
+</div>
+<a name="1:8"><div class="section"><h4>8. Authenticate</h4></a>
+<p>Here we are done parsing the command and selections and we start checking if the user is allowed to escalate privileges. There are various important checks done here, which is the section where code is most sensitive. From here onwards the golden rule should be: better safe than sorry!
+</p>
+<p>Checks implemented are:
+</p>
+<ol>
+<li>the user is part of at least one group among: <code>admin</code>, <code>wheel</code>, <code>sudo</code> or <code>sud</code>.
+</li>
+<li>the command is an existing file that is executable and not writable to anyone
+</li>
+<li>optionally PAM authentication is used and users are prompted for their password
+</li>
+</ol>
 
 <div class="codeblock">
-<span class="codeblock_name">{Verify privileged access <a href="sud.html#1:6">6</a>}</span>
+<span class="codeblock_name">{Verify privileged access <a href="sud.html#1:8">8</a>}</span>
 <pre class="prettyprint lang-c">
 
     // get the called UID and GID
     uid = getuid ();
-
-    // one could maintain a log of calls here
-    // XXX("sud %s called by %s(%d) gid(%d)\n",
-    //     fullcmd, pw?pw-&gt;pw_name:"", uid, gid);
 
     // get number of groups first
     ngroups = getgroups(0, NULL);
@@ -539,11 +605,15 @@ int main(int argc, char **argv)
 </pre>
 
 
-
+<p class="seealso">Used in section <a href="sud.html#1:6">6</a></p>
 </div>
+</div>
+<a name="1:9"><div class="section"><h4>9. Command execution</h4></a>
+<p>If the main function has kept executing until here, then it means the user is authorized. Then it proceeds calling <code>setuid</code> and <code>seteuid</code> to elevate the privileges of the running process. At last it uses <code>execve</code> to execute the command followed by its arguments.
+</p>
 
 <div class="codeblock">
-<span class="codeblock_name">{Execute the command <a href="sud.html#1:6">6</a>}</span>
+<span class="codeblock_name">{Execute the command <a href="sud.html#1:9">9</a>}</span>
 <pre class="prettyprint lang-c">
 
        // privilege escalation
@@ -557,24 +627,27 @@ int main(int argc, char **argv)
        }
 
     // turn current process into the execution of command
-    // XXX("execve: %s",fullcmd);
     execve(fullcmd, &amp;argv[optind], NULL); //&amp;argv[ps.optind], NULL);
 </pre>
 
 
-
+<p class="seealso">Used in section <a href="sud.html#1:6">6</a></p>
 </div>
+<p>Any error returned by the previous <code>execve</code> call is interpreted and printed to screen.
+</p>
 
 <div class="codeblock">
-<span class="codeblock_name">{Print any errors <a href="sud.html#1:6">6</a>}</span>
+<span class="codeblock_name">{Print any errors <a href="sud.html#1:9">9</a>}</span>
 <pre class="prettyprint lang-c">
     // execv returns only on errors
     ERR("execv: %s", strerror(errno));
 </pre>
 
 
-
+<p class="seealso">Used in section <a href="sud.html#1:6">6</a></p>
 </div>
+<p>That's all folks!
+</p>
 
 </div>
 </body>
