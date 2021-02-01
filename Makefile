@@ -36,6 +36,11 @@ release-musl: codegen stamp
 	musl-gcc $(CFLAGS) -O3 $(SECURE_FLAGS) -DRELEASE -c sud.c
 	musl-gcc $(CFLAGS) -static -O3 $(SECURE_FLAGS) sud.o parg.o -o sud
 
+release-osx: codegen stamp
+	clang $(CFLAGS) -O3 $(SECURE_FLAGS) -c src/parg.c
+	clang $(CFLAGS) -O3 $(SECURE_FLAGS) -DRELEASE -c sud.c
+	clang $(CFLAGS) -O3 $(SECURE_FLAGS) sud.o parg.o -o sud
+
 release-pam: codegen stamp
 	gcc $(CFLAGS) -O3 $(SECURE_FLAGS) -c src/parg.c
 	gcc $(CFLAGS) -O3 $(SECURE_FLAGS) -DRELEASE -DPAM_AUTH -c sud.c
