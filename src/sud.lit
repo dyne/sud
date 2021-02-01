@@ -35,6 +35,7 @@ The overall structure of `sud.c` is simple:
 --- sud.c
 @{Header files of system dependencies}
 @{Macros and exit codes}
+@{Global variables}
 @{Reusable functions}
 @{The main program}
 ---
@@ -89,6 +90,15 @@ This is needed for
 which gives us a list of groups to which the user belongs.
 
 --- Header files of system dependencies +=
+#ifdef PAM_AUTH
+#include <pam_appl.h>
+#endif
+---
+
+Optional LibPAM support for user authentication through system
+configured password modules.
+
+--- Header files of system dependencies +=
 #include "src/parg.h"
 ---
 
@@ -125,6 +135,17 @@ meaning they are "hard-coded" inside the binary of SUD when it is built.
 #define PATH_MAX 1024
 ---
 
+@s Global variables
+
+Variables whose scope is global to the execution of this program and
+visible to all its functions. Their names must be unique and should
+not be clashing with variables local to functions.
+
+--- Global variables
+#ifdef PAM_AUTH
+static char *password_input = 0x0;
+#endif
+---
 
 --- Reusable functions
 static short compare(char *left, char *right, size_t len) {
@@ -138,6 +159,61 @@ static short compare(char *left, char *right, size_t len) {
 	if(left[i] || right[i]) return(0);
 	return(1); // return success
 }
+
+#ifdef PAM_AUTH
+static int
+pam_converse (int num_msg, const struct pam_message **msgs,
+              struct pam_response **resp, void *data) {
+    int i;
+    struct pam_response* responses;
+    (void) data;
+
+    // safety
+    if (num_msg <= 0 || num_msg > PAM_MAX_NUM_MSG) {
+	    ERR("Internal PAM error: invalid num_msgs == %u",num_msg);
+	    return PAM_CONV_ERR;
+    }
+
+    // allocate responses
+    responses = calloc(num_msg, sizeof(struct pam_response)); // FIXME
+    if (!responses) {
+	    ERR("PAM error: %s","out of memory");
+	    return PAM_BUF_ERR;
+    }
+
+    for (i = 0; i < num_msg; i++) {
+	    const struct pam_message *msg = msgs[i];
+	    struct pam_response* response = &(responses[i]);
+	    char* style = NULL;
+	    switch (msg->msg_style) {
+	    case PAM_PROMPT_ECHO_OFF: style = "PAM_PROMPT_ECHO_OFF"; break;
+	    case PAM_PROMPT_ECHO_ON: style = "PAM_PROMPT_ECHO_ON"; break;
+	    case PAM_ERROR_MSG: style = "PAM_ERROR_MSG"; break;
+	    case PAM_TEXT_INFO: style = "PAM_TEXT_INFO"; break;
+	    default: ERR("Internal error: invalid msg_style: %d", msg->msg_style); break;
+	    }
+	    XXX("conversation(): msg[%d], style %s, msg = \"%s\"", i, style, msg->msg);
+
+	    switch (msg->msg_style) {
+	    case PAM_PROMPT_ECHO_OFF:
+		    // reply with password
+		    response->resp = strdup(password_input); // FIXME
+		    if (!response->resp)
+			    return PAM_CONV_ERR;
+		    break;
+
+	    default:
+		    ERR("Internal error: unknown message style: '%s'", style);
+		    return PAM_CONV_ERR;
+	    }
+	    response->resp_retcode = 0;
+    }
+
+    *resp = responses;
+
+    return PAM_SUCCESS;
+}
+#endif
 ---
 
 @s Main
@@ -296,6 +372,49 @@ int main(int argc, char **argv)
 	    return usage_error;
     }
 
+#ifdef PAM_AUTH
+               // PAM
+               struct pam_conv pam_conversation = { pam_converse, NULL };
+               pam_handle_t* pamh;
+               int res;
+               res = pam_start("sud", pw->pw_name, &pam_conversation, &pamh);
+               if(res != PAM_SUCCESS) {
+	               ERR("PAM start failure: %s",pam_strerror(pamh, res));
+	               return usage_error;
+               }
+               password_input = getpass("Password: ");
+               res = pam_authenticate(pamh, 0);
+               if(res != PAM_SUCCESS) {
+	               ERR("PAM auth failure: %s",pam_strerror(pamh, res));
+	               return usage_error;
+               }
+               res = pam_acct_mgmt(pamh, 0);
+               if(res != PAM_SUCCESS) {
+	               ERR("PAM account management failure: %s",pam_strerror(pamh, res));
+	               return usage_error;
+               }
+               res = pam_setcred(pamh, PAM_ESTABLISH_CRED);
+               if(res != PAM_SUCCESS) {
+	               ERR("PAM credentials failure: %s",pam_strerror(pamh, res));
+	               return usage_error;
+               }
+               res = pam_open_session(pamh, PAM_SILENT);
+               if(res != PAM_SUCCESS) {
+	               ERR("PAM session open failure: %s",pam_strerror(pamh, res));
+	               return usage_error;
+               }
+               res = pam_close_session(pamh, PAM_SILENT);
+               if(res != PAM_SUCCESS) {
+	               ERR("PAM session close failure: %s",pam_strerror(pamh, res));
+	               return usage_error;
+               }
+               res = pam_end(pamh, res);
+               if(res != PAM_SUCCESS) {
+	               ERR("PAM end failure: %s",pam_strerror(pamh, res));
+	               return usage_error;
+               }
+               ACT("PAM authentication: %s", "successful");
+#endif
 ---
 
 --- Execute the command

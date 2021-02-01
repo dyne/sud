@@ -19,6 +19,16 @@ release: stamp
 	musl-gcc -static -O3 -std=c99 $(SECURE_FLAGS) sud.o parg.o -o sud
 	sha512sum sud.c | gpg -o SHASUMS.txt --clear-sign
 
+pam-auth: stamp
+	pandoc -f gfm -t html README.md -o index.html
+	literate/bin/lit src/sud.lit
+	gcc -O3 -std=c99 $(SECURE_FLAGS) -I src -c src/parg.c
+	gcc -O3 -std=c99 $(SECURE_FLAGS) -DRELEASE -DPAM_AUTH -I src -I /usr/include/security -c sud.c
+	gcc -O3 -std=c99 $(SECURE_FLAGS) sud.o parg.o -o sud -lpam
+	sha512sum sud.c | gpg -o SHASUMS.txt --clear-sign
+
+# /usr/lib/x86_64-linux-gnu/libpamc.a /usr/lib/x86_64-linux-gnu/libpam_misc.a
+
 stamp:
 	echo "#define SHA512_SUD_C \"$(shell sha512sum sud.c)\"" > stamp.h
 	echo "#define BUILD_TIME \"$(shell date)\"" >> stamp.h
@@ -30,4 +40,4 @@ install:
 	install -o root -g root -p -m 4775 sud $(DESTDIR)$(PREFIX)/bin
 
 clean:
-	rm -f sud parg.o sud.html sud.c macros.h index.html
+	rm -f *.o *.h *.c *.html
