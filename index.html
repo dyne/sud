@@ -51,6 +51,8 @@ see <a href="https://github.com/dyne/sud">github.com/dyne/sud</a>.
 </p>
 <p>Stable releases can be downloaded from <a href="https://files.dyne.org/sud">files.dyne.org/sud</a>
 </p>
+<p><a href="http://www.dyne.org"><img src="https://files.dyne.org/software_by_dyne.png" alt="software by Dyne.org"></a>
+</p>
 <hr>
 <hr>
 <p>This software aims to be a UNIX tool for generic secure usage when in
@@ -458,7 +460,7 @@ unless it is specified as an absolute path to file.
 	     case 'v':
 		     ACT("Sud version %s", VERSION);
 #ifdef RELEASE
-		     ACT("%s (sha512)",SHA512_SUD_C);
+		     ACT("%s %s",SHA512_SUD_C, VERSION);
 		     ACT("built on %s",BUILD_TIME);
 #endif
 		     return OK;

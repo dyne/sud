@@ -5,6 +5,8 @@ need of privilege escalation. It is designed to run SUID, with
 "super-user powers" to execute things as root on the system it is
 installed.
 
+[![software by Dyne.org](https://files.dyne.org/software_by_dyne.png)](http://www.dyne.org)
+
 Main differences compared to sudo:
 
 - Easier audit thanks to literate development methodology
@@ -105,15 +107,12 @@ Literate programming source-code starts from documentation which is
 then used to generate the source-code and a website. In case of SUD
 I'm using the [Literate Programming
 System](https://github.com/zyedidia/Literate) written in D, which is
-included as a submodule in the `literate` sub-folder. Also
-[Pandoc](https://pandoc.org) is needed to render the README into its
-homepage. To make sure it is ready for use:
+included as a submodule in the `literate` sub-folder. To make sure it is ready for use:
 
 1. install `gcc` or another C compiler
 2. install `dub` the D package registry and a D compiler
-3. install `pandoc` for markdown rendering
-4. make sure the `literate` git submodule is initialised and updated
-5. type `make` or read the `Makefile` for other targets
+3. make sure the `literate` git submodule is initialised and updated
+4. type `make` or read the `Makefile` for other targets
 
 All the above should be possible on any operating system, if you don't
 know why is most likely because you don't know well enough the system

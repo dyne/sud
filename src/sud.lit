@@ -13,6 +13,9 @@ For instructions on how to install, build and contribute
 see [github.com/dyne/sud](https://github.com/dyne/sud).
 
 Stable releases can be downloaded from [files.dyne.org/sud](https://files.dyne.org/sud)
+
+[![software by Dyne.org](https://files.dyne.org/software_by_dyne.png)](http://www.dyne.org)
+
 ---
 ---
 
@@ -317,7 +320,7 @@ A few traditional options
 	     case 'v':
 		     ACT("Sud version %s", VERSION);
 #ifdef RELEASE
-		     ACT("%s (sha512)",SHA512_SUD_C);
+		     ACT("%s %s",SHA512_SUD_C, VERSION);
 		     ACT("built on %s",BUILD_TIME);
 #endif
 		     return OK;
