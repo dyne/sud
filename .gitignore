@@ -1,4 +1,9 @@
 sud.c
 macros.h
 sud
+sud.o
+parg.o
+SHASUMS*
+stamp.h
+settings.json
 
