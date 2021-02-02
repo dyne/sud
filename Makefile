@@ -41,6 +41,14 @@ release-osx: codegen stamp
 	clang $(CFLAGS) -O3 $(SECURE_FLAGS) -DRELEASE -c sud.c
 	clang $(CFLAGS) -O3 $(SECURE_FLAGS) sud.o parg.o -o sud
 
+release-rpi: pi = /opt/cross-pi-gcc
+release-rpi: gcc := $(pi)/bin/arm-linux-gnueabihf-gcc
+release-rpi: CFLAGS := -O3 -march=armv6 -mfloat-abi=hard -mfpu=vfp -I$(pi)/arm-linux-gnueabihf/include
+release-rpi: codegen stamp
+        $(gcc) $(CFLAGS) $(SECURE_FLAGS) -c src/parg.c
+        $(gcc) $(CFLAGS) $(SECURE_FLAGS) -DRELEASE -c sud.c
+        $(gcc) $(CFLAGS) $(SECURE_FLAGS) sud.o parg.o -o sud
+
 release-pam: codegen stamp
 	gcc $(CFLAGS) -O3 $(SECURE_FLAGS) -c src/parg.c
 	gcc $(CFLAGS) -O3 $(SECURE_FLAGS) -DRELEASE -DPAM_AUTH -c sud.c

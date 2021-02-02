@@ -111,7 +111,7 @@ included as a submodule in the `literate` sub-folder. To make sure it is ready f
 
 1. install `gcc` or another C compiler
 2. install `dub` the D package registry and a D compiler
-3. make sure the `literate` git submodule is initialised and updated
+3. make sure the `literate` git submodule is updated and built
 4. type `make` or read the `Makefile` for other targets
 
 All the above should be possible on any operating system, if you don't
