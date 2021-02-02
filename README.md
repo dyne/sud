@@ -52,12 +52,17 @@ linked component.
 To start using sud on a 64bit GNU+Linux machine, simply do:
 
 ```
-curl https://files.dyne.org/sud/sud_gnu_64 > ~/Downloads/sud
+curl https://files.dyne.org/sud/sud-x86-musl > ~/Downloads/sud
 ```
 
 Or on Apple/OSX:
 ```
-curl https://files.dyne.org/sud/sud_osx_64 > ~/Downloads/sud
+curl https://files.dyne.org/sud/sud-x86-osx > ~/Downloads/sud
+```
+
+Or on a RaspberryPI (any version)
+```
+curl https://files.dyne.org/sud/sud-arm-rpi > ~/Downloads/sud
 ```
 
 Then to activate it must be in the path and made SUID:
@@ -71,9 +76,12 @@ To verify the binary integrity of SUD use `sud -v` and compare the SHA512 to the
 
 ```
 hash=https://files.dyne.org/sud/SHASUMS.txt
+echo "Checking sud binary integrity from: $hash\n"
 curl -s https://jaromil.dyne.org/jaromil.pub | gpg --import
 curl -s $hash | gpg --verify
-curl -s $hash | awk '/sud.c$/ {print $0}'
+echo "\nReleases listed:"
+curl -s $hash | awk '/sud.c/ {print $0}'
+echo "\nYours found at $(which sud):"
 sud -v | awk '/sud.c/ {print $0}'
 ```
 
