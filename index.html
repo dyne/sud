@@ -136,10 +136,11 @@ depends from a writable binary file.
 
 <p class="seealso">Used in section <a href="sud.html#1:2">2</a></p>
 </div>
-<p>This header is necessary for
+<p>This header is necessary to be able to impersonate another user
+using the <code>-u</code> option: it gives us access to
 <a href="https://man7.org/linux/man-pages/man3/getpwuid.3.html">getpwnam</a>
 which we use to query the password database (i.e. the local
-<code>/etc/passwd</code> file).
+<code>/etc/passwd</code> file) and retrieve the uid of the desired user.
 </p>
 
 <div class="codeblock">
@@ -152,7 +153,7 @@ which we use to query the password database (i.e. the local
 <p class="seealso">Used in section <a href="sud.html#1:2">2</a></p>
 </div>
 <p>This is needed for
-<a href="https://man7.org/linux/man-pages/man3/getgrouplist.3.html">getgrouplist</a>
+<a href="https://man7.org/linux/man-pages/man2/getgroups.2.html">getgroups</a>
 which gives us a list of groups to which the user belongs.
 </p>
 

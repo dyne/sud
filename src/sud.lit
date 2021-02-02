@@ -74,17 +74,18 @@ depends from a writable binary file.
 #include <pwd.h>
 ---
 
-This header is necessary for
+This header is necessary to be able to impersonate another user
+using the `-u` option: it gives us access to
 [getpwnam](https://man7.org/linux/man-pages/man3/getpwuid.3.html)
 which we use to query the password database (i.e. the local
-`/etc/passwd` file).
+`/etc/passwd` file) and retrieve the uid of the desired user.
 
 --- Header files of system dependencies +=
 #include <grp.h>
 ---
 
 This is needed for
-[getgrouplist](https://man7.org/linux/man-pages/man3/getgrouplist.3.html)
+[getgroups](https://man7.org/linux/man-pages/man2/getgroups.2.html)
 which gives us a list of groups to which the user belongs.
 
 --- Header files of system dependencies +=
