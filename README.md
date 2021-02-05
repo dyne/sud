@@ -1,47 +1,72 @@
 # SUD :: Super User Do
 
-This software aims to be a UNIX tool for generic secure usage when in
-need of privilege escalation. It is designed to run SUID, with
-"super-user powers" to execute things as root on the system it is
-installed.
+This software aims to be a general implementation of a UNIX tool for
+privilege escalation, mostly for didactic and frugal purposes. It is
+designed to run SUID, with "super-user powers" to execute things as
+root on the system it is installed. If built with PAM support then it
+may also ask a confirmation password.
 
 [![software by Dyne.org](https://files.dyne.org/software_by_dyne.png)](http://www.dyne.org)
 
-Main differences compared to sudo:
+## Motivation
 
-- Easier audit thanks to literate development methodology
-- Fewer lines of code, fewer features, fewer dependencies
-- No configuration file, no parsers
-- Public domain licensing
+This software is a direct response to the sudo tool which has been
+adopted by major Linux and BSD distros while augmenting its complexity
+and [collecting
+vulnerabilities](https://cve.mitre.org/cgi-bin/cvekey.cgi?keyword=sudo)
+last not least
+[CVE-2021-3156](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-3156).
 
-SUD can either be built as a static executable (no dynamic linking of libraries)
-or dynamically linked to allow PAM authentication module to do its work
-by asking users to confirm their password.
+With SUD I intend to finally act up and innovate this field of
+development considering we have been [relying for 10 years on a tool
+that could have been trivially hacked all that
+time](https://www.zdnet.com/article/10-years-old-sudo-bug-lets-linux-users-gain-root-level-access/).
 
-It doesn't covers all use-cases addressed by sudo, but a few common
-situations in which multi-user privilege isolation is a necessary and
-sufficient condition to safely operate a local or remote machine.
+## Pros and cons
+
+SUD doesn't covers all use-cases addressed by alternatives, but a few
+common situations in which multi-user privilege isolation is a
+necessary and sufficient condition to safely operate a local or remote
+machine.
+
+Below a short summary of pros (advantages) and cons (disadvantages) over
+existing alternatives:
+
+### Pros compared to [sudo](https://www.sudo.ws/repo.html):
+
+- Easier audit thanks to literate development methodology.
+- Fewer lines of code, fewer features, fewer dependencies.
+
+### Pros compared to [doas](https://github.com/Duncaen/OpenDoas):
+
+No configuration file, no parsers.
+
+### Pros compared to [sup](https://github.com/parazyd/sup) and [my own bloated sup](https://github.com/dyne/sup):
+
+Runtime configuration based on GID (well, not really an advantage,
+more of a different approach for different use-cases).
+
+### Pros compared to all other implementations:
+
+Public domain licensing
+
+### Cons:
+
+- Not heavily tested
+- Code may be improved in some places
+- Documentation needs more lovance and spell checking
+
 
 ## Methodology
-
-SUD is designed for security: it leverages all possible measures to
-avoid vulnerabilities, primarily the reduction of complexity in its
-own design and implementation.
 
 SUD is software written following the
 [literate-programming](https://en.wikipedia.org/wiki/Literate_programming)
 approach and welcomes reviews and contributions.
 
-You are welcome to read [SUD's source-code and documentation](https://sud.dyne.org).
+Before using SUD you are supposed to [read its annotated source-code](https://sud.dyne.org).
 
-Contribute via [issues](dyne/sud/issues) or by [sending me a private email](https://jaromil.dyne.org).
 
-SUD is licensed as Public Domain in the hope to improve the security
-of UNIX systems at large. The portability of `sud` to any BSD and
-POSIX compliant system is a desirable feature and contributions are
-welcome.
-
-## Downloads
+# Downloads
 
 SUD is distributed as a static binary for various platforms on
 [files.dyne.org/sud](https://files.dyne.org/sud)
@@ -85,31 +110,11 @@ echo "\nYours found at $(which sud):"
 sud -v | awk '/sud.c/ {print $0}'
 ```
 
-## Motivation
-
-This software is a direct response to the `sudo` tool which has been
-adopted by major Linux and BSD distros while augmenting its complexity
-and [collecting
-vulnerabilities](https://cve.mitre.org/cgi-bin/cvekey.cgi?keyword=sudo)
-last not least
-[CVE-2021-3156](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-3156).
-
-With SUD I intend to finally act up and develop something different,
-considering we have been [relying for 10 years on a tool that could
-have been trivially hacked all that
-time](https://www.zdnet.com/article/10-years-old-sudo-bug-lets-linux-users-gain-root-level-access/). In
-doing so I do not intend to cover all use-cases addressed by `sudo`
-and its plugins, but only the most common one of allowing a specific
-user to execute commands as root or as another user.
-
-SUD takes inspiration from the suckless tool
-[sup](https://sup.dyne.org) and welcomes contributions from coders who
-are well incline to be suckless.
-
-SUD will never, ever include integrations with systemd.
-
-
 ## How to build SUD from source
+
+SUD can either be built as a static executable (no dynamic linking of
+libraries) or dynamically linked to allow PAM authentication module to
+do its work by asking users to confirm their password.
 
 Literate programming source-code starts from documentation which is
 then used to generate the source-code and a website. In case of SUD
@@ -126,12 +131,26 @@ All the above should be possible on any operating system, if you don't
 know why is most likely because you don't know well enough the system
 you are running. Go find out.
 
-## Work in progress
+## Work in progress?
 
-If you are reading down to here it means you are really
-interested. Please signal yourself and be
-welcome to entertain the merry folks gathering around this campfire,
-there is always room for improvement.
+This repository is maintained to improve the clarity of code and
+eventually its security, would any flaws be found. It will not be
+developed further: no new features, eventually less code.
+
+SUD is licensed as Public Domain in the hope to improve the awareness
+of how privilege escalation is done. The portability of SUD to any BSD
+and POSIX compliant system is a desirable feature and contributions
+are welcome.
+
+Contribute via [issues](dyne/sud/issues) or by [sending me a private email](https://jaromil.dyne.org).
+
+I am also working on a new software following this effort: a very
+secure alternative to sudo that covers some of its core features, plus
+adds new features and implements new ideas to grant the security of a
+UNIX privilege escalation tool on GNU/Linux and Apple/OSX.
+
+Keep an eye [here](https://github.com/jaromil/suca) in case you are
+interested.
 
 ## License
 
