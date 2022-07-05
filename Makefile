@@ -56,10 +56,10 @@ release-osx: codegen stamp
 	clang $(CFLAGS) -O3 $(SECURE_FLAGS) -DRELEASE -c sud.c
 	clang $(CFLAGS) -O3 $(SECURE_FLAGS) sud.o parg.o -o sud
 
-release-rpi: pi = /opt/cross-pi-gcc ## Build a static release with cross-pi
+release-rpi: pi = /opt/cross-pi-gcc
 release-rpi: gcc := $(pi)/bin/arm-linux-gnueabihf-gcc
 release-rpi: CFLAGS := -O3 -march=armv6 -mfloat-abi=hard -mfpu=vfp -I$(pi)/arm-linux-gnueabihf/include
-release-rpi: codegen stamp
+release-rpi: codegen stamp ## Build a static release with cross-pi
 		$(gcc) $(CFLAGS) $(SECURE_FLAGS) -c src/parg.c
 		$(gcc) $(CFLAGS) $(SECURE_FLAGS) -DRELEASE -c sud.c
 		$(gcc) $(CFLAGS) $(SECURE_FLAGS) sud.o parg.o -o sud
@@ -68,3 +68,8 @@ release-sign: ## Sign the SHASUMS on the uploaded release
 	curl https://files.dyne.org/sud/SHASUMS.txt | grep sud.c > SHASUMS_old.txt
 	echo "$(shell sha512sum sud.c) $(shell grep 'define VERSION' sud.c | cut -d\" -f2)" >> SHASUMS_old.txt
 	cat SHASUMS_old.txt | gpg -o SHASUMS.txt --clear-sign
+
+wget-cross-pi: ## Download and extract the cross-pi toolchain
+	wget https://github.com/Pro/raspi-toolchain/releases/latest/download/raspi-toolchain.tar.gz
+	@echo "Download complete, please extract in /opt/ as root:"
+	@echo "tar xfz raspi-toolchain.tar.gz --strip-components=1 -C /opt"
