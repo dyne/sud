@@ -124,8 +124,12 @@ included as a submodule in the `literate` sub-folder. To make sure it is ready f
 
 1. install `gcc` or another C compiler
 2. install `dub` the D package registry and a D compiler
-3. make sure the `literate` git submodule is updated and built
-4. type `make` or read the `Makefile` for other targets
+3. make sure the `literate` git submodule is updated
+4. make -C literate to build the documentation tool
+5. type `make` to build sud
+6. type `sudo make install` to install sud with suid
+
+Tead the [Makefile](Makefile) for other supported build targets.
 
 All the above should be possible on any operating system, if you don't
 know why is most likely because you don't know well enough the system
@@ -144,13 +148,12 @@ are welcome.
 
 Contribute via [issues](dyne/sud/issues) or by [sending me a private email](https://jaromil.dyne.org).
 
-I am also working on a new software following this effort: a very
+I am also considering to write a new software following this effort: a very
 secure alternative to sudo that covers some of its core features, plus
 adds new features and implements new ideas to grant the security of a
 UNIX privilege escalation tool on GNU/Linux and Apple/OSX.
 
-Keep an eye [here](https://github.com/jaromil/suca) in case you are
-interested.
+Keep an eye [here](https://github.com/jaromil/suca) in case you are interested.
 
 ## License
 
@@ -160,7 +163,7 @@ SUD redistributes the [parg](https://github.com/jibsen/parg) library by Jørgen 
 
 Code reviews were kindly contributed by members of the Veteran Unix Admins and the 2600 Hacker Quarterly online communities.
 
-SUD is Copyright (C) 2021 by the Dyne.org foundation
+SUD is Copyright (C) 2021-2022 by the Dyne.org foundation
 
 <p xmlns:dct="https://purl.org/dc/terms/" xmlns:vcard="https://www.w3.org/2001/vcard-rdf/3.0#">
   <a rel="license"

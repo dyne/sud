@@ -72,12 +72,18 @@ complexity in its own source-code and its documentation.
 </p>
 
 <div class="codeblock">
+ndex.html/g
 <span class="codeblock_name">{<strong>sud.c</strong> <a href="sud.html#1:2">2</a>}</span>
 <pre class="prettyprint lang-c">
+ndex.html/g
 <span class="nocode pln">{Header files of system dependencies, <a href="sud.html#1:3">3</a>}</span>
+ndex.html/g
 <span class="nocode pln">{Macros and exit codes, <a href="sud.html#1:4">4</a>}</span>
+ndex.html/g
 <span class="nocode pln">{Global variables, <a href="sud.html#1:5">5</a>}</span>
+ndex.html/g
 <span class="nocode pln">{Reusable functions, <a href="sud.html#1:5">5</a>}</span>
+ndex.html/g
 <span class="nocode pln">{The main program, <a href="sud.html#1:6">6</a>}</span>
 </pre>
 
@@ -95,6 +101,7 @@ platform targets.
 </p>
 
 <div class="codeblock">
+ndex.html/g
 <span class="codeblock_name">{Header files of system dependencies <a href="sud.html#1:3">3</a>}</span>
 <pre class="prettyprint lang-c">
 #define _DEFAULT_SOURCE 1
@@ -105,6 +112,7 @@ platform targets.
 </pre>
 
 
+ndex.html/g
 <p class="seealso">Used in section <a href="sud.html#1:2">2</a></p>
 </div>
 <p>Above is a pretty standard selection of headers to provide basic
@@ -112,6 +120,7 @@ functionalities of i/o, terminal output and error reporting.
 </p>
 
 <div class="codeblock">
+ndex.html/g
 <span class="codeblock_name">{Header files of system dependencies <a href="sud.html#1:3">3</a>} +=</span>
 <pre class="prettyprint lang-c">
 #include &lt;sys/stat.h&gt;
@@ -119,6 +128,7 @@ functionalities of i/o, terminal output and error reporting.
 </pre>
 
 
+ndex.html/g
 <p class="seealso">Used in section <a href="sud.html#1:2">2</a></p>
 </div>
 <p>Above are the necessary headers for
@@ -128,12 +138,14 @@ depends from a writable binary file.
 </p>
 
 <div class="codeblock">
+ndex.html/g
 <span class="codeblock_name">{Header files of system dependencies <a href="sud.html#1:3">3</a>} +=</span>
 <pre class="prettyprint lang-c">
 #include &lt;pwd.h&gt;
 </pre>
 
 
+ndex.html/g
 <p class="seealso">Used in section <a href="sud.html#1:2">2</a></p>
 </div>
 <p>This header is necessary to be able to impersonate another user
@@ -144,12 +156,14 @@ which we use to query the password database (i.e. the local
 </p>
 
 <div class="codeblock">
+ndex.html/g
 <span class="codeblock_name">{Header files of system dependencies <a href="sud.html#1:3">3</a>} +=</span>
 <pre class="prettyprint lang-c">
 #include &lt;grp.h&gt;
 </pre>
 
 
+ndex.html/g
 <p class="seealso">Used in section <a href="sud.html#1:2">2</a></p>
 </div>
 <p>This is needed for
@@ -158,6 +172,7 @@ which gives us a list of groups to which the user belongs.
 </p>
 
 <div class="codeblock">
+ndex.html/g
 <span class="codeblock_name">{Header files of system dependencies <a href="sud.html#1:3">3</a>} +=</span>
 <pre class="prettyprint lang-c">
 #ifdef PAM_AUTH
@@ -166,6 +181,7 @@ which gives us a list of groups to which the user belongs.
 </pre>
 
 
+ndex.html/g
 <p class="seealso">Used in section <a href="sud.html#1:2">2</a></p>
 </div>
 <p>Optional LibPAM support for user authentication through system
@@ -173,18 +189,21 @@ configured password modules.
 </p>
 
 <div class="codeblock">
+ndex.html/g
 <span class="codeblock_name">{Header files of system dependencies <a href="sud.html#1:3">3</a>} +=</span>
 <pre class="prettyprint lang-c">
 #include "src/parg.h"
 </pre>
 
 
+ndex.html/g
 <p class="seealso">Used in section <a href="sud.html#1:2">2</a></p>
 </div>
 <p>This loads the <a href="https://github.com/jibsen/parg">parg</a> library for command-line argument parsing.
 </p>
 
 <div class="codeblock">
+ndex.html/g
 <span class="codeblock_name">{Header files of system dependencies <a href="sud.html#1:3">3</a>} +=</span>
 <pre class="prettyprint lang-c">
 #ifdef RELEASE
@@ -193,6 +212,7 @@ configured password modules.
 </pre>
 
 
+ndex.html/g
 <p class="seealso">Used in section <a href="sud.html#1:2">2</a></p>
 </div>
 <p>At last the <code>stamp.h</code> is also included in case the <code>RELEASE</code> directive
@@ -207,6 +227,7 @@ meaning they are "hard-coded" inside the binary of SUD when it is built.
 </p>
 
 <div class="codeblock">
+ndex.html/g
 <span class="codeblock_name">{Macros and exit codes <a href="sud.html#1:4">4</a>}</span>
 <pre class="prettyprint lang-c">
 #define VERSION "1.1.0"
@@ -222,6 +243,7 @@ meaning they are "hard-coded" inside the binary of SUD when it is built.
 </pre>
 
 
+ndex.html/g
 <p class="seealso">Used in section <a href="sud.html#1:2">2</a></p>
 </div>
 </div>
@@ -232,6 +254,7 @@ not be clashing with variables local to functions.
 </p>
 
 <div class="codeblock">
+ndex.html/g
 <span class="codeblock_name">{Global variables <a href="sud.html#1:5">5</a>}</span>
 <pre class="prettyprint lang-c">
 #ifdef PAM_AUTH
@@ -240,10 +263,12 @@ static char *password_input = 0x0;
 </pre>
 
 
+ndex.html/g
 <p class="seealso">Used in section <a href="sud.html#1:2">2</a></p>
 </div>
 
 <div class="codeblock">
+ndex.html/g
 <span class="codeblock_name">{Reusable functions <a href="sud.html#1:5">5</a>}</span>
 <pre class="prettyprint lang-c">
 static short compare(char *left, char *right, size_t len) {
@@ -319,6 +344,7 @@ pam_converse (int num_msg, const struct pam_message **msgs,
 </pre>
 
 
+ndex.html/g
 <p class="seealso">Used in section <a href="sud.html#1:2">2</a></p>
 </div>
 </div>
@@ -329,25 +355,33 @@ sections:
 </p>
 
 <div class="codeblock">
+ndex.html/g
 <span class="codeblock_name">{The main program <a href="sud.html#1:6">6</a>}</span>
 <pre class="prettyprint lang-c">
 int main(int argc, char **argv)
 {
+ndex.html/g
 <span class="nocode pln">	{Declare variables, <a href="sud.html#1:6">6</a>}</span>
+ndex.html/g
 <span class="nocode pln">    {Parse command-line options, <a href="sud.html#1:7">7</a>}</span>
+ndex.html/g
 <span class="nocode pln">    {Verify privileged access, <a href="sud.html#1:8">8</a>}</span>
+ndex.html/g
 <span class="nocode pln">    {Execute the command, <a href="sud.html#1:9">9</a>}</span>
+ndex.html/g
 <span class="nocode pln">    {Print any errors, <a href="sud.html#1:9">9</a>}</span>
 }
 </pre>
 
 
+ndex.html/g
 <p class="seealso">Used in section <a href="sud.html#1:2">2</a></p>
 </div>
 <p>Below the first section declares variables that are used inside main:
 </p>
 
 <div class="codeblock">
+ndex.html/g
 <span class="codeblock_name">{Declare variables <a href="sud.html#1:6">6</a>}</span>
 <pre class="prettyprint lang-c">
      // full path to command
@@ -376,6 +410,7 @@ int main(int argc, char **argv)
 </p>
 
 <div class="codeblock">
+ndex.html/g
 <span class="codeblock_name">{Parse command-line options <a href="sud.html#1:7">7</a>}</span>
 <pre class="prettyprint lang-c">
      int c, optind;
@@ -385,6 +420,7 @@ int main(int argc, char **argv)
 </pre>
 
 
+ndex.html/g
 <p class="seealso">Used in section <a href="sud.html#1:6">6</a></p>
 </div>
 <p>This following check is necessary to avoid parsing options if a command was already selected:
@@ -393,12 +429,14 @@ Once a command is recognized, then all following arguments belong to it.
 </p>
 
 <div class="codeblock">
+ndex.html/g
 <span class="codeblock_name">{Parse command-line options <a href="sud.html#1:7">7</a>} +=</span>
 <pre class="prettyprint lang-c">
 	     if(fullcmd[0]) break;
 </pre>
 
 
+ndex.html/g
 <p class="seealso">Used in section <a href="sud.html#1:6">6</a></p>
 </div>
 <p>The <code>case 1</code> switch is the one that parses the command to execute and its arguments.
@@ -410,6 +448,7 @@ unless it is specified as an absolute path to file.
 </p>
 
 <div class="codeblock">
+ndex.html/g
 <span class="codeblock_name">{Parse command-line options <a href="sud.html#1:7">7</a>} +=</span>
 <pre class="prettyprint lang-c">
 	     switch (c) {
@@ -439,6 +478,7 @@ unless it is specified as an absolute path to file.
 </pre>
 
 
+ndex.html/g
 <p class="seealso">Used in section <a href="sud.html#1:6">6</a></p>
 </div>
 <p>A few traditional options
@@ -451,6 +491,7 @@ unless it is specified as an absolute path to file.
 </ul>
 
 <div class="codeblock">
+ndex.html/g
 <span class="codeblock_name">{Parse command-line options <a href="sud.html#1:7">7</a>} +=</span>
 <pre class="prettyprint lang-c">
 	     case 'h':
@@ -473,12 +514,14 @@ unless it is specified as an absolute path to file.
 </pre>
 
 
+ndex.html/g
 <p class="seealso">Used in section <a href="sud.html#1:6">6</a></p>
 </div>
 <p>The option <code>-u</code> is followed by an argument and indicates a different user than root.
 </p>
 
 <div class="codeblock">
+ndex.html/g
 <span class="codeblock_name">{Parse command-line options <a href="sud.html#1:7">7</a>} +=</span>
 <pre class="prettyprint lang-c">
 	     case 'u':
@@ -500,6 +543,7 @@ unless it is specified as an absolute path to file.
 </pre>
 
 
+ndex.html/g
 <p class="seealso">Used in section <a href="sud.html#1:6">6</a></p>
 </div>
 </div>
@@ -518,6 +562,7 @@ unless it is specified as an absolute path to file.
 </ol>
 
 <div class="codeblock">
+ndex.html/g
 <span class="codeblock_name">{Verify privileged access <a href="sud.html#1:8">8</a>}</span>
 <pre class="prettyprint lang-c">
 
@@ -600,6 +645,7 @@ unless it is specified as an absolute path to file.
 </pre>
 
 
+ndex.html/g
 <p class="seealso">Used in section <a href="sud.html#1:6">6</a></p>
 </div>
 </div>
@@ -608,6 +654,7 @@ unless it is specified as an absolute path to file.
 </p>
 
 <div class="codeblock">
+ndex.html/g
 <span class="codeblock_name">{Execute the command <a href="sud.html#1:9">9</a>}</span>
 <pre class="prettyprint lang-c">
 
@@ -626,12 +673,14 @@ unless it is specified as an absolute path to file.
 </pre>
 
 
+ndex.html/g
 <p class="seealso">Used in section <a href="sud.html#1:6">6</a></p>
 </div>
 <p>Any error returned by the previous <code>execve</code> call is interpreted and printed to screen.
 </p>
 
 <div class="codeblock">
+ndex.html/g
 <span class="codeblock_name">{Print any errors <a href="sud.html#1:9">9</a>}</span>
 <pre class="prettyprint lang-c">
     // execv returns only on errors
@@ -639,6 +688,7 @@ unless it is specified as an absolute path to file.
 </pre>
 
 
+ndex.html/g
 <p class="seealso">Used in section <a href="sud.html#1:6">6</a></p>
 </div>
 <p>That's all folks!

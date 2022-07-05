@@ -14,7 +14,8 @@ codegen:
 	@echo Building SUD
 	@echo
 	literate/bin/lit src/sud.lit
-	@mv sud.html index.html
+	@sed -e '/sud.html/index.html/g' sud.html > index.html
+	@rm sud.html
 	@echo "C output:    sud.c"
 	@echo "HTML output: index.html"
 	@echo
