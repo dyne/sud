@@ -9,6 +9,34 @@ It will grant super user access to all users included in at least one system gro
 
 [![software by Dyne.org](https://files.dyne.org/software_by_dyne.png)](http://www.dyne.org)
 
+## Quick build
+
+Clone the literate submodule: `git submodule update --init`
+
+Install `dub` (the D language compiler)
+
+Build the literate code parser: `make -C literate`
+
+Build sud: `make release`
+
+Other build targets:
+
+```
+Usage:
+  make <target> CC=gcc (or clang)
+
+General
+  codegen          Generate C code from literate file in src/
+  release          Build a dynamically linked release
+  debug            Build a shared binary with debugging symbols
+  install          Install the current build system-wide
+  clean            Clean the build
+  stamp            Generate a SHA512 hash and timestamp for the binary build
+  release-musl     Build a static release with musl
+  release-rpi      Build a static release with cross-pi
+  release-sign     Sign the SHASUMS on the uploaded release
+```
+
 ## Motivation
 
 This software is a direct response to the sudo tool which has been
