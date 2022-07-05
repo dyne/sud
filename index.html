@@ -475,8 +475,11 @@ ndex.html/g
     // get number of groups first
     ngroups = getgroups(0, NULL);
     gid_t *groups = calloc(ngroups, sizeof(gid_t));
-    // get the list of groups
+    // get the list of groups, here we intend to ignore the result
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-result"
     getgroups(ngroups, groups);
+#pragma GCC diagnostic pop
     for (int i = 0; i &lt; ngroups; i++){
 	    gr = getgrgid(groups[i]);
 	    if(!gr) {
