@@ -20,10 +20,6 @@ codegen:
 	@echo "HTML output: index.html"
 	@echo
 
-debug-pam: codegen
-	gcc $(CFLAGS) $(DEBUG_FLAGS) -c src/parg.c
-	gcc $(CGLAGS) $(DEBUG_FLAGS) -DPAM_AUTH sud.c parg.o -o sud -lpam
-
 stamp:
 	@echo "#define SHA512_SUD_C \"$(shell sha512sum sud.c)\"" > stamp.h
 	@echo "#define BUILD_TIME \"$(shell date)\"" >> stamp.h
@@ -49,11 +45,6 @@ release-rpi: codegen stamp
 		$(gcc) $(CFLAGS) $(SECURE_FLAGS) -c src/parg.c
 		$(gcc) $(CFLAGS) $(SECURE_FLAGS) -DRELEASE -c sud.c
 		$(gcc) $(CFLAGS) $(SECURE_FLAGS) sud.o parg.o -o sud
-
-release-pam: codegen stamp
-	gcc $(CFLAGS) -O3 $(SECURE_FLAGS) -c src/parg.c
-	gcc $(CFLAGS) -O3 $(SECURE_FLAGS) -DRELEASE -DPAM_AUTH -c sud.c
-	gcc $(CFLAGS) -O3 $(SECURE_FLAGS) sud.o parg.o -o sud -lpam
 
 release-sign:
 	curl https://files.dyne.org/sud/SHASUMS.txt | grep sud.c > SHASUMS_old.txt

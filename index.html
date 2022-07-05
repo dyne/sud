@@ -80,8 +80,6 @@ ndex.html/g
 ndex.html/g
 <span class="nocode pln">{Macros and exit codes, <a href="sud.html#1:4">4</a>}</span>
 ndex.html/g
-<span class="nocode pln">{Global variables, <a href="sud.html#1:5">5</a>}</span>
-ndex.html/g
 <span class="nocode pln">{Reusable functions, <a href="sud.html#1:5">5</a>}</span>
 ndex.html/g
 <span class="nocode pln">{The main program, <a href="sud.html#1:6">6</a>}</span>
@@ -175,23 +173,6 @@ which gives us a list of groups to which the user belongs.
 ndex.html/g
 <span class="codeblock_name">{Header files of system dependencies <a href="sud.html#1:3">3</a>} +=</span>
 <pre class="prettyprint lang-c">
-#ifdef PAM_AUTH
-#include &lt;security/pam_appl.h&gt;
-#endif
-</pre>
-
-
-ndex.html/g
-<p class="seealso">Used in section <a href="sud.html#1:2">2</a></p>
-</div>
-<p>Optional LibPAM support for user authentication through system
-configured password modules.
-</p>
-
-<div class="codeblock">
-ndex.html/g
-<span class="codeblock_name">{Header files of system dependencies <a href="sud.html#1:3">3</a>} +=</span>
-<pre class="prettyprint lang-c">
 #include "src/parg.h"
 </pre>
 
@@ -230,7 +211,7 @@ meaning they are "hard-coded" inside the binary of SUD when it is built.
 ndex.html/g
 <span class="codeblock_name">{Macros and exit codes <a href="sud.html#1:4">4</a>}</span>
 <pre class="prettyprint lang-c">
-#define VERSION "1.1.0"
+#define VERSION "1.2.0"
 #define OK 0                  // status code for successful run
 #define usage_error 1         // status code for command not found
 
@@ -255,20 +236,6 @@ not be clashing with variables local to functions.
 
 <div class="codeblock">
 ndex.html/g
-<span class="codeblock_name">{Global variables <a href="sud.html#1:5">5</a>}</span>
-<pre class="prettyprint lang-c">
-#ifdef PAM_AUTH
-static char *password_input = 0x0;
-#endif
-</pre>
-
-
-ndex.html/g
-<p class="seealso">Used in section <a href="sud.html#1:2">2</a></p>
-</div>
-
-<div class="codeblock">
-ndex.html/g
 <span class="codeblock_name">{Reusable functions <a href="sud.html#1:5">5</a>}</span>
 <pre class="prettyprint lang-c">
 static short compare(char *left, char *right, size_t len) {
@@ -282,65 +249,6 @@ static short compare(char *left, char *right, size_t len) {
 	if(left[i] || right[i]) return(0);
 	return(1); // return success
 }
-
-#ifdef PAM_AUTH
-static int
-pam_converse (int num_msg, const struct pam_message **msgs,
-              struct pam_response **resp, void *data) {
-    int i;
-    struct pam_response* responses;
-    (void) data;
-
-    // safety
-    if (num_msg &lt;= 0 || num_msg &gt; PAM_MAX_NUM_MSG) {
-	    ERR("Internal PAM error: invalid num_msgs == %u",num_msg);
-	    return PAM_CONV_ERR;
-    }
-
-    // allocate responses
-    responses = calloc(num_msg, sizeof(struct pam_response)); // FIXME
-    if (!responses) {
-	    ERR("PAM error: %s","out of memory");
-	    return PAM_BUF_ERR;
-    }
-
-    for (i = 0; i &lt; num_msg; i++) {
-	    const struct pam_message *msg = msgs[i];
-	    struct pam_response* response = &amp;(responses[i]);
-	    char* style = NULL;
-	    switch (msg-&gt;msg_style) {
-	    case PAM_PROMPT_ECHO_OFF: style = "PAM_PROMPT_ECHO_OFF"; break;
-	    case PAM_PROMPT_ECHO_ON: style = "PAM_PROMPT_ECHO_ON"; break;
-	    case PAM_ERROR_MSG: style = "PAM_ERROR_MSG"; break;
-	    case PAM_TEXT_INFO: style = "PAM_TEXT_INFO"; break;
-	    default: ERR("Internal error: invalid msg_style: %d", msg-&gt;msg_style); break;
-	    }
-	    // XXX("conversation(): msg[%d], style %s, msg = \"%s\"", i, style, msg-&gt;msg);
-
-	    switch (msg-&gt;msg_style) {
-		case PAM_TEXT_INFO:
-			ACT("[sud] %s",msg-&gt;msg);
-			break;
-
-	    case PAM_PROMPT_ECHO_OFF:
-		    // reply with password
-		    response-&gt;resp = password_input;
-		    if (!response-&gt;resp)
-			    return PAM_CONV_ERR;
-		    break;
-
-	    default:
-		    ERR("Internal error: unknown message style: '%s'", style);
-		    return PAM_CONV_ERR;
-	    }
-	    response-&gt;resp_retcode = 0;
-    }
-
-    *resp = responses;
-
-    return PAM_SUCCESS;
-}
-#endif
 </pre>
 
 
@@ -557,8 +465,6 @@ ndex.html/g
 </li>
 <li>the command is an existing file that is executable and not writable to anyone
 </li>
-<li>optionally PAM authentication is used and users are prompted for their password
-</li>
 </ol>
 
 <div class="codeblock">
@@ -599,49 +505,6 @@ ndex.html/g
 	    return usage_error;
     }
 
-#ifdef PAM_AUTH
-               // PAM
-               struct pam_conv pam_conversation = { pam_converse, NULL };
-               pam_handle_t* pamh;
-               int res;
-               res = pam_start("sud", getlogin(), &amp;pam_conversation, &amp;pamh);
-               if(res != PAM_SUCCESS) {
-	               ERR("PAM start failure: %s",pam_strerror(pamh, res));
-	               return usage_error;
-               }
-               password_input = getpass("[sud] Password: ");
-               res = pam_authenticate(pamh, 0);
-               if(res != PAM_SUCCESS) {
-	               ERR("PAM auth failure: %s",pam_strerror(pamh, res));
-	               return usage_error;
-               }
-               res = pam_acct_mgmt(pamh, 0);
-               if(res != PAM_SUCCESS) {
-	               ERR("PAM account management failure: %s",pam_strerror(pamh, res));
-	               return usage_error;
-               }
-               res = pam_setcred(pamh, PAM_ESTABLISH_CRED);
-               if(res != PAM_SUCCESS) {
-	               ERR("PAM credentials failure: %s",pam_strerror(pamh, res));
-	               return usage_error;
-               }
-               res = pam_open_session(pamh, PAM_SILENT);
-               if(res != PAM_SUCCESS) {
-	               ERR("PAM session open failure: %s",pam_strerror(pamh, res));
-	               return usage_error;
-               }
-               res = pam_close_session(pamh, PAM_SILENT);
-               if(res != PAM_SUCCESS) {
-	               ERR("PAM session close failure: %s",pam_strerror(pamh, res));
-	               return usage_error;
-               }
-               res = pam_end(pamh, res);
-               if(res != PAM_SUCCESS) {
-	               ERR("PAM end failure: %s",pam_strerror(pamh, res));
-	               return usage_error;
-               }
-               // ACT("PAM authentication: %s", "successful");
-#endif
 </pre>
 
 

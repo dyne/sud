@@ -3,8 +3,9 @@
 This software aims to be a general implementation of a UNIX tool for
 privilege escalation, mostly for didactic and frugal purposes. It is
 designed to run SUID, with "super-user powers" to execute things as
-root on the system it is installed. If built with PAM support then it
-may also ask a confirmation password.
+root on the system it is installed.
+
+It will grant super user access to all users included in at least one system group named as `admin`, `wheel`, `sudo` or `sud`. Simple as that, no password asked.
 
 [![software by Dyne.org](https://files.dyne.org/software_by_dyne.png)](http://www.dyne.org)
 
@@ -113,8 +114,7 @@ sud -v | awk '/sud.c/ {print $0}'
 ## How to build SUD from source
 
 SUD can either be built as a static executable (no dynamic linking of
-libraries) or dynamically linked to allow PAM authentication module to
-do its work by asking users to confirm their password.
+libraries) or dynamically linked.
 
 Literate programming source-code starts from documentation which is
 then used to generate the source-code and a website. In case of SUD
